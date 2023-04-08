@@ -1,5 +1,7 @@
 # macOS
 .DS_Store
 
-
+# eclipse
+*stm-can-converter/Debug
+*stm-can-source/Debug
 
