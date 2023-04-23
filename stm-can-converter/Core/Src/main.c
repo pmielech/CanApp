@@ -58,21 +58,8 @@ uint8_t RxData[8];
 uint8_t count = 0;
 uint8_t can_status = 0;
 uint8_t uart_status = 0;
-
-int __io_putchar(int ch)
-{
-    HAL_UART_Transmit(&huart2, (uint8_t*)&ch, 1, HAL_MAX_DELAY);
-    return 1;
-}
-
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
-{
-	can_status = HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData);
-	count++;
-	printf("%u\n\r", count);
-
-}
-
+uint16_t msg_id = 0;
+uint8_t converted_msg[9] = {0};
 
 
 /* USER CODE END PV */
@@ -88,6 +75,37 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+
+int __io_putchar(int ch)
+{
+    HAL_UART_Transmit(&huart2, (uint8_t*)&ch, 1, HAL_MAX_DELAY);
+    return 1;
+}
+
+void vPrint_message(){
+	printf("%04x ", msg_id);
+	for(int i = 0; i < sizeof(converted_msg); i++)
+		{
+					printf("%02x ", converted_msg[i]);
+		} printf("\n\r");
+	}
+
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+	can_status += HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData);
+	if(can_status == 0){
+
+		msg_id = RxHeader.StdId;
+		converted_msg[0] = RxHeader.DLC;
+		int i, j;
+		for(i=0, j=1; i < sizeof(converted_msg) && j < 10; i++, j++){
+			converted_msg[j] = RxData[i];
+		} vPrint_message();
+
+	}
+}
+
 
 /* USER CODE END 0 */
 
@@ -124,19 +142,9 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 
-	HAL_CAN_Start(&hcan);
+	can_status += HAL_CAN_Start(&hcan);
 
-	HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
-
-	TxHeader.DLC = 0x1;
-	TxHeader.ExtId = 0;
-	TxHeader.IDE = CAN_ID_STD;
-	TxHeader.RTR = CAN_RTR_DATA;
-	TxHeader.StdId = 0x103;
-	TxHeader.TransmitGlobalTime = DISABLE;
-
-
-	TxData[0] = 0xf3;
+	can_status += HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
 
   /* USER CODE END 2 */
 
@@ -144,8 +152,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox);
-	  HAL_Delay(1000);
+	  //HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox);
+	  HAL_Delay(100);
 
     /* USER CODE END WHILE */
 
@@ -217,7 +225,7 @@ static void MX_CAN_Init(void)
   /* USER CODE END CAN_Init 1 */
   hcan.Instance = CAN;
   hcan.Init.Prescaler = 18;
-  hcan.Init.Mode = CAN_MODE_LOOPBACK;
+  hcan.Init.Mode = CAN_MODE_NORMAL;
   hcan.Init.SyncJumpWidth = CAN_SJW_2TQ;
   hcan.Init.TimeSeg1 = CAN_BS1_2TQ;
   hcan.Init.TimeSeg2 = CAN_BS2_1TQ;
@@ -296,10 +304,14 @@ static void MX_USART2_UART_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
