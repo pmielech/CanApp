@@ -1,0 +1,95 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:canApp.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="canApp.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="canApp"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+<Window.Styles>
+    <Style Selector="HeaderedContentControl">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border>
+                        <StackPanel>
+                            <ContentPresenter TextBlock.FontWeight="Bold" Content="{TemplateBinding Header}" />
+                            <Border
+                                BorderBrush="{TemplateBinding Background}"
+                                BorderThickness="2"
+                                CornerRadius="5">
+                                <ContentPresenter Content="{TemplateBinding Content}" />
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    
+    
+</Window.Styles>
+    
+    
+    <Grid ShowGridLines="True" Margin="5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="4">
+            <TextBlock Text="COM" VerticalAlignment="Top" HorizontalAlignment="Left"></TextBlock>
+            <ListBox Margin="0,31, 0,90"></ListBox>
+            <Button VerticalAlignment="Bottom" HorizontalAlignment="Center" Width="120" Content="Refresh List"></Button>
+            <Button VerticalAlignment="Bottom" HorizontalAlignment="Center" Width="120" Content="Connect"></Button>
+
+        </StackPanel>
+        <StackPanel Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" Grid.ColumnSpan="3" >
+            <Grid ShowGridLines="True">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                    
+                </Grid.RowDefinitions>
+                <HeaderedContentControl Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="4" Grid.RowSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Header="Messages" Background="White">
+                    <TextBlock Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3"  Text="text"  Margin="5" Height="360"/>
+                </HeaderedContentControl>
+                
+                <Button Grid.Column="0" Grid.Row="3" Content="Send"></Button>
+                <TextBox Grid.Column="1" Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></TextBox>
+            </Grid>
+            
+            
+            
+            
+        </StackPanel>
+    </Grid>
+</Window>
