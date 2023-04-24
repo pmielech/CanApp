@@ -49,17 +49,19 @@ UART_HandleTypeDef huart2;
 
 CAN_TxHeaderTypeDef TxHeader;
 CAN_RxHeaderTypeDef RxHeader;
+CAN_TxHeaderTypeDef Button_TxHeader;
 
 uint32_t TxMailbox;
 
 uint8_t TxData[8];
 uint8_t RxData[8];
 
-uint8_t count = 0;
+uint8_t led_state = 0;
 uint8_t can_status = 0;
 uint8_t uart_status = 0;
 uint16_t msg_id = 0;
 uint8_t converted_msg[9] = {0};
+uint8_t button_msg[8] = {0};
 
 
 /* USER CODE END PV */
@@ -106,6 +108,33 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	}
 }
 
+void vCan_messages_init(){
+
+	Button_TxHeader.DLC = 0x01;
+	Button_TxHeader.ExtId = 0;
+	Button_TxHeader.IDE = CAN_ID_STD;
+	Button_TxHeader.RTR = CAN_RTR_DATA;
+	Button_TxHeader.StdId = 0x350;
+	Button_TxHeader.TransmitGlobalTime = DISABLE;
+
+
+}
+
+void vButton_message(){
+	button_msg[0] = led_state;
+	can_status += HAL_CAN_AddTxMessage(&hcan, &Button_TxHeader, button_msg, &TxMailbox);
+
+}
+
+
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+	if(GPIO_Pin == BLUE_BUTTON_Pin){
+		led_state = !led_state;
+		vButton_message();
+	}
+
+}
 
 /* USER CODE END 0 */
 
@@ -141,10 +170,9 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
-
 	can_status += HAL_CAN_Start(&hcan);
-
 	can_status += HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
+	vCan_messages_init();
 
   /* USER CODE END 2 */
 
@@ -304,11 +332,23 @@ static void MX_USART2_UART_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 /* USER CODE BEGIN MX_GPIO_Init_1 */
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /*Configure GPIO pin : BLUE_BUTTON_Pin */
+  GPIO_InitStruct.Pin = BLUE_BUTTON_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(BLUE_BUTTON_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
