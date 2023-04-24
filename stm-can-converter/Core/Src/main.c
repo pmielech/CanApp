@@ -60,8 +60,9 @@ uint8_t led_state = 0;
 uint8_t can_status = 0;
 uint8_t uart_status = 0;
 uint16_t msg_id = 0;
-uint8_t converted_msg[9] = {0};
+uint8_t converted_msg[8] = {0};
 uint8_t button_msg[8] = {0};
+uint8_t msg_dlc = 0;
 
 
 /* USER CODE END PV */
@@ -87,6 +88,7 @@ int __io_putchar(int ch)
 
 void vPrint_message(){
 	printf("%04x ", msg_id);
+	printf("%02x ", msg_dlc);
 	for(int i = 0; i < sizeof(converted_msg); i++)
 		{
 					printf("%02x ", converted_msg[i]);
@@ -99,11 +101,17 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	if(can_status == 0){
 
 		msg_id = RxHeader.StdId;
-		converted_msg[0] = RxHeader.DLC;
-		int i, j;
-		for(i=0, j=1; i < sizeof(converted_msg) && j < 10; i++, j++){
-			converted_msg[j] = RxData[i];
-		} vPrint_message();
+		msg_dlc = RxHeader.DLC;
+
+		if (msg_dlc != 0) {
+			int i;
+			for(i=0; i < sizeof(converted_msg); i++){
+				converted_msg[i] = RxData[i];
+			}
+		} else{
+			memset(converted_msg, 0, 8);
+		}
+		vPrint_message();
 
 	}
 }
