@@ -18,9 +18,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "can.h"
-#include "usart.h"
-#include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -44,12 +41,14 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+CAN_HandleTypeDef hcan;
+
+UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 
 CAN_TxHeaderTypeDef TxHeader;
 CAN_RxHeaderTypeDef RxHeader;
-
 CAN_TxHeaderTypeDef Button_TxHeader;
 
 uint32_t TxMailbox;
@@ -61,14 +60,18 @@ uint8_t led_state = 0;
 uint8_t can_status = 0;
 uint8_t uart_status = 0;
 uint16_t msg_id = 0;
-uint8_t converted_msg[9] = {0};
+uint8_t converted_msg[8] = {0};
 uint8_t button_msg[8] = {0};
+uint8_t msg_dlc = 0;
 
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
+static void MX_CAN_Init(void);
+static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -85,6 +88,7 @@ int __io_putchar(int ch)
 
 void vPrint_message(){
 	printf("%04x ", msg_id);
+	printf("%02x ", msg_dlc);
 	for(int i = 0; i < sizeof(converted_msg); i++)
 		{
 					printf("%02x ", converted_msg[i]);
@@ -97,19 +101,19 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	if(can_status == 0){
 
 		msg_id = RxHeader.StdId;
-		converted_msg[0] = RxHeader.DLC;
-		int i, j;
-		for(i=0, j=1; i < sizeof(converted_msg) && j < 10; i++, j++){
-			converted_msg[j] = RxData[i];
-		} vPrint_message();
+		msg_dlc = RxHeader.DLC;
+
+		if (msg_dlc != 0) {
+			int i;
+			for(i=0; i < sizeof(converted_msg); i++){
+				converted_msg[i] = RxData[i];
+			}
+		} else{
+			memset(converted_msg, 0, 8);
+		}
+		vPrint_message();
 
 	}
-}
-
-void vButton_message(){
-	button_msg[0] = led_state;
-	can_status += HAL_CAN_AddTxMessage(&hcan, &Button_TxHeader, button_msg, &TxMailbox);
-
 }
 
 void vCan_messages_init(){
@@ -124,6 +128,14 @@ void vCan_messages_init(){
 
 }
 
+void vButton_message(){
+	button_msg[0] = led_state;
+	can_status += HAL_CAN_AddTxMessage(&hcan, &Button_TxHeader, button_msg, &TxMailbox);
+
+}
+
+
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	if(GPIO_Pin == BLUE_BUTTON_Pin){
 		led_state = !led_state;
@@ -131,8 +143,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	}
 
 }
-
-
 
 /* USER CODE END 0 */
 
@@ -167,10 +177,10 @@ int main(void)
   MX_CAN_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+
 	can_status += HAL_CAN_Start(&hcan);
 	can_status += HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
 	vCan_messages_init();
-
 
   /* USER CODE END 2 */
 
@@ -179,6 +189,7 @@ int main(void)
   while (1)
   {
 	  //HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox);
+	  HAL_Delay(100);
 
     /* USER CODE END WHILE */
 
@@ -231,6 +242,124 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief CAN Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_CAN_Init(void)
+{
+
+  /* USER CODE BEGIN CAN_Init 0 */
+
+  /* USER CODE END CAN_Init 0 */
+
+  /* USER CODE BEGIN CAN_Init 1 */
+
+  /* USER CODE END CAN_Init 1 */
+  hcan.Instance = CAN;
+  hcan.Init.Prescaler = 18;
+  hcan.Init.Mode = CAN_MODE_NORMAL;
+  hcan.Init.SyncJumpWidth = CAN_SJW_2TQ;
+  hcan.Init.TimeSeg1 = CAN_BS1_2TQ;
+  hcan.Init.TimeSeg2 = CAN_BS2_1TQ;
+  hcan.Init.TimeTriggeredMode = DISABLE;
+  hcan.Init.AutoBusOff = DISABLE;
+  hcan.Init.AutoWakeUp = DISABLE;
+  hcan.Init.AutoRetransmission = DISABLE;
+  hcan.Init.ReceiveFifoLocked = DISABLE;
+  hcan.Init.TransmitFifoPriority = DISABLE;
+  if (HAL_CAN_Init(&hcan) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN CAN_Init 2 */
+
+  CAN_FilterTypeDef can_filter_config;
+
+  can_filter_config.FilterActivation = CAN_FILTER_ENABLE;
+  can_filter_config.FilterBank = 10;
+  can_filter_config.FilterFIFOAssignment = CAN_RX_FIFO0;
+  can_filter_config.FilterIdHigh = 0;
+  can_filter_config.FilterIdLow = 0x0000;
+  can_filter_config.FilterMaskIdHigh = 0;			// decides which bits in id should be compared
+  can_filter_config.FilterMaskIdLow = 0x0000;
+  can_filter_config.FilterMode = CAN_FILTERMODE_IDMASK;
+  can_filter_config.FilterScale = CAN_FILTERSCALE_32BIT;
+  can_filter_config.SlaveStartFilterBank = 0;
+
+  HAL_CAN_ConfigFilter(&hcan, &can_filter_config);
+
+
+
+  /* USER CODE END CAN_Init 2 */
+
+}
+
+/**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 9600;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GPIO_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
+
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /*Configure GPIO pin : BLUE_BUTTON_Pin */
+  GPIO_InitStruct.Pin = BLUE_BUTTON_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(BLUE_BUTTON_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
