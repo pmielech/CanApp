@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AvaloniaProject">
+    <option name="projectPerEditor">
+      <map>
+        <entry key="canApp/App.axaml" value="canApp/canApp.csproj" />
+        <entry key="canApp/Views/MainWindow.axaml" value="canApp/canApp.csproj" />
+      </map>
+    </option>
+  </component>
+</project>
