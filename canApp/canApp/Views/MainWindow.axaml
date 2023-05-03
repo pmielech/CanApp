@@ -9,7 +9,8 @@
         Icon="/Assets/avalonia-logo.ico"
         Title="canApp"
         TransparencyLevelHint="AcrylicBlur"
-        Background="Transparent">
+        Background="Transparent"
+        >
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
@@ -42,7 +43,7 @@
 </Window.Styles>
     
     
-    <Grid ShowGridLines="True" Margin="5">
+    <Grid  Margin="5">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
@@ -56,40 +57,84 @@
             <RowDefinition Height="*"></RowDefinition>
             
         </Grid.RowDefinitions>
-        <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="4">
-            <TextBlock Text="COM" VerticalAlignment="Top" HorizontalAlignment="Left"></TextBlock>
-            <ListBox Margin="0,31, 0,90"></ListBox>
-            <Button VerticalAlignment="Bottom" HorizontalAlignment="Center" Width="120" Content="Refresh List"></Button>
-            <Button VerticalAlignment="Bottom" HorizontalAlignment="Center" Width="120" Content="Connect"></Button>
+        <Grid ShowGridLines="false" Grid.Column="0" Grid.Row="0" Grid.RowSpan="4">
+            <Border Grid.Column="0" Grid.Row="0"  CornerRadius="7" Padding="3" BorderThickness="1" BorderBrush="White">
+                <Grid ShowGridLines="False" Margin="3">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
 
-        </StackPanel>
-        <StackPanel Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" Grid.ColumnSpan="3" >
-            <Grid ShowGridLines="True">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"></ColumnDefinition>
-                    <ColumnDefinition Width="*"></ColumnDefinition>
-                    <ColumnDefinition Width="*"></ColumnDefinition>
-                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
                     
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"></RowDefinition>
-                    <RowDefinition Height="*"></RowDefinition>
-                    <RowDefinition Height="*"></RowDefinition>
-                    <RowDefinition Height="*"></RowDefinition>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Text="COM~Port" VerticalAlignment="Top" HorizontalAlignment="Stretch"></TextBlock>
+                    <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Port"></Label>
                     
-                </Grid.RowDefinitions>
-                <HeaderedContentControl Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="4" Grid.RowSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Header="Messages" Background="White">
-                    <TextBlock Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3"  Text="text"  Margin="5" Height="360"/>
-                </HeaderedContentControl>
-                
-                <Button Grid.Column="0" Grid.Row="3" Content="Send"></Button>
-                <TextBox Grid.Column="1" Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></TextBox>
+                    <ComboBox Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="3"  Items="{Binding ComList.Items}" SelectedIndex="{Binding Selected_com}" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"></TextBlock>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Button Grid.Row="2" Grid.Column="3" Grid.ColumnSpan="3" Command="{Binding RefreshComPortsCommand}" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
+                        <TextBlock HorizontalAlignment="Center" Text="Refresh List"></TextBlock>
+                    </Button>
+                    <Button Grid.Row="3" Grid.Column="3" Grid.ColumnSpan="3" Command="{Binding ConnectToComCommand }" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
+                        <TextBlock HorizontalAlignment="Center" Text="Connect"></TextBlock>
+                    </Button>
+                    
+                </Grid>
+            </Border>
+        </Grid>
+        <Border Grid.Column="1" Grid.Row="0" Grid.RowSpan="4" Grid.ColumnSpan="3" CornerRadius="7" Margin="3" BorderThickness="1" BorderBrush="White" >
+            <Grid>
+                <Grid ShowGridLines="False">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+
+                    
+                    </Grid.RowDefinitions>
+                    <Label Grid.Column="0" Grid.Row="0"  Content="Messages Control"></Label>
+                    <Border Grid.Column="0" Grid.Row="1" Grid.RowSpan="8" Grid.ColumnSpan="4" Background="#5A5A5A" CornerRadius="7" Margin="3" BorderThickness="1" BorderBrush="White" >
+                        <TextBlock  Margin="5" Text="{Binding Recived_data}" HorizontalAlignment="Left"></TextBlock>
+                    </Border>
+                    <Button Grid.Column="3" Grid.Row="9" Content="Send"></Button>
+                    <TextBox Grid.Column="1" Grid.Row="9" Grid.ColumnSpan="2" Grid.RowSpan="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></TextBox>
+                </Grid>
             </Grid>
-            
-            
-            
-            
-        </StackPanel>
+        </Border>
     </Grid>
 </Window>
