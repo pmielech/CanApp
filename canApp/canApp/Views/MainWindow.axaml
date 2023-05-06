@@ -57,7 +57,7 @@
             <RowDefinition Height="*"></RowDefinition>
             
         </Grid.RowDefinitions>
-        <Grid ShowGridLines="false" Grid.Column="0" Grid.Row="0" Grid.RowSpan="4">
+        <Grid ShowGridLines="False" Grid.Column="0" Grid.Row="0" Grid.RowSpan="4">
             <Border Grid.Column="0" Grid.Row="0"  CornerRadius="7" Padding="3" BorderThickness="1" BorderBrush="White">
                 <Grid ShowGridLines="False" Margin="3">
                     <Grid.RowDefinitions>
@@ -85,7 +85,7 @@
                     <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Text="COM~Port" VerticalAlignment="Top" HorizontalAlignment="Stretch"></TextBlock>
                     <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Port"></Label>
                     
-                    <ComboBox Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="3"  Items="{Binding ComList.Items}" SelectedIndex="{Binding Selected_com}" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                    <ComboBox Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="3"  Items="{Binding ComList.Items}" SelectedIndex="{Binding SelectedCom}" VerticalAlignment="Center" HorizontalAlignment="Stretch">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Name}"></TextBlock>
@@ -95,8 +95,9 @@
                     <Button Grid.Row="2" Grid.Column="3" Grid.ColumnSpan="3" Command="{Binding RefreshComPortsCommand}" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
                         <TextBlock HorizontalAlignment="Center" Text="Refresh List"></TextBlock>
                     </Button>
+                    <Ellipse Grid.Row="3" Grid.Column="2"  Width="20" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Center"  Fill="{Binding StatusColor}"></Ellipse>
                     <Button Grid.Row="3" Grid.Column="3" Grid.ColumnSpan="3" Command="{Binding ConnectToComCommand }" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
-                        <TextBlock HorizontalAlignment="Center" Text="Connect"></TextBlock>
+                        <TextBlock HorizontalAlignment="Center" Text="{Binding ConnectionButton}"></TextBlock>
                     </Button>
                     
                 </Grid>
@@ -129,10 +130,13 @@
                     </Grid.RowDefinitions>
                     <Label Grid.Column="0" Grid.Row="0"  Content="Messages Control"></Label>
                     <Border Grid.Column="0" Grid.Row="1" Grid.RowSpan="8" Grid.ColumnSpan="4" Background="#5A5A5A" CornerRadius="7" Margin="3" BorderThickness="1" BorderBrush="White" >
-                        <TextBlock  Margin="5" Text="{Binding Recived_data}" HorizontalAlignment="Left"></TextBlock>
+                       <ScrollViewer>
+                           <TextBlock ScrollViewer.VerticalScrollBarVisibility="Visible"  Margin="5" Text="{Binding ReceivedData}" HorizontalAlignment="Left"></TextBlock>
+                       </ScrollViewer>
                     </Border>
-                    <Button Grid.Column="3" Grid.Row="9" Content="Send"></Button>
-                    <TextBox Grid.Column="1" Grid.Row="9" Grid.ColumnSpan="2" Grid.RowSpan="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></TextBox>
+                    <Button Grid.Column="0" Grid.Row="9" Content="Clear" Command="{Binding ClearReceivedData }" HorizontalAlignment="Left"></Button>
+                    <Button Grid.Column="3" Grid.Row="9" Content="Send" Command="{Binding SendUserMessage}"></Button>
+                    <TextBox Grid.Column="1" Grid.Row="9" Grid.ColumnSpan="2" Grid.RowSpan="1" Text="{Binding UserInput}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></TextBox>
                 </Grid>
             </Grid>
         </Border>
