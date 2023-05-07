@@ -131,7 +131,7 @@
                     <Label Grid.Column="0" Grid.Row="0"  Content="Messages Control"></Label>
                     <Border Grid.Column="0" Grid.Row="1" Grid.RowSpan="8" Grid.ColumnSpan="4" Background="#5A5A5A" CornerRadius="7" Margin="3" BorderThickness="1" BorderBrush="White" >
                        <ScrollViewer>
-                           <TextBlock ScrollViewer.VerticalScrollBarVisibility="Visible"  Margin="5" Text="{Binding ReceivedData}" HorizontalAlignment="Left"></TextBlock>
+                           <TextBlock ScrollViewer.VerticalScrollBarVisibility="Visible"  Margin="5" Text="{Binding SerialData}" HorizontalAlignment="Left"></TextBlock>
                        </ScrollViewer>
                     </Border>
                     <Button Grid.Column="0" Grid.Row="9" Content="Clear" Command="{Binding ClearReceivedData }" HorizontalAlignment="Left"></Button>

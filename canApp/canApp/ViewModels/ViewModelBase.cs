@@ -50,11 +50,11 @@ public class ViewModelBase : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _selectedCom, value);
     }
     
-    private string _receivedData = "";
-    public string ReceivedData
+    private string _serialData = "";
+    public string SerialData
     {
-        get => _receivedData;
-        set => this.RaiseAndSetIfChanged(ref _receivedData, value);
+        get => _serialData;
+        set => this.RaiseAndSetIfChanged(ref _serialData, value);
     }
 }
     

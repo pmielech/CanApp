@@ -9,7 +9,7 @@ using System.Windows.Input;
 using Avalonia;
 using Avalonia.Threading;
 using canApp.Models;
-using ReactiveUI;
+using ReactiveUI; 
 using canApp.Services;
 
 namespace canApp.ViewModels;
@@ -25,7 +25,6 @@ public class MainWindowViewModel : ViewModelBase
     public ComViewModel ComList { get; }
 
     private readonly SerialPort _serial = new SerialPort();
-    
 
     public MainWindowViewModel(DebugComList cp)
     {
@@ -72,25 +71,21 @@ public class MainWindowViewModel : ViewModelBase
                     }
                     
                     var date = DateTime.Now.ToString("HH:mm:ss");
-                    ReceivedData += $"==> TX<{date}> ~ {UserInput}\n";
+                    SerialData += $"==> TX<{date}> ~ {UserInput}\n";
                     UserInput = "";
 
                 }
                 catch (Exception ex)
                 {
-                    ReceivedData += "~~~Failed to send data!~~~\n";
+                    SerialData += "~~~Failed to send data!~~~\n";
 
                 }
-                
-                
             }
-            
-            
         });     
             
         ClearReceivedData = ReactiveCommand.Create(() =>
         {
-            ReceivedData = "";
+            SerialData = "";
         });
 
         ConnectToComCommand = ReactiveCommand.Create(() =>
@@ -114,8 +109,9 @@ public class MainWindowViewModel : ViewModelBase
                     {
                         StatusColor = "Green";
                     }
-                    ReceivedData += "~~~Connected Successful!~~~\n";
+                    SerialData += "~~~Connected Successful!~~~\n";
                     Thread.Sleep(10);
+                    //_serial.ReadLine() += new System.IO.Ports.SerialDataReceivedEventHandler(Receive);
                     _serial.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(Receive);
                     ConnectionButton = "Disconnect";
 
@@ -156,12 +152,12 @@ public class MainWindowViewModel : ViewModelBase
 
     private void Receive(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
     {
-        // Collecting the characters received to our 'buffer' (string).
         var date = DateTime.Now.ToString("HH:mm:ss");
-        ReceivedData += $"<== Rx<{date}> ~ {_serial.ReadExisting()}";
-        
-
+        string message = _serial.ReadLine().Trim('\r', '\n');
+        if (message.Length == 32)
+        {
+            SerialData += $"<== Rx<{date}> ~ {message}\n";
+        }
     }
-    
 
 }

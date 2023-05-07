@@ -10,7 +10,6 @@
     <list default="true" id="91771189-1256-4bcc-a05c-5dd2044336f5" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.canApp/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.canApp/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/ViewModels/MainWindowViewModel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/ViewModels/MainWindowViewModel.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canApp/ViewModels/MsgViewModel.cs" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/ViewModels/ViewModelBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/ViewModels/ViewModelBase.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/Views/MainWindow.axaml" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/Views/MainWindow.axaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/bin/Debug/net7.0/canApp.dll" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/bin/Debug/net7.0/canApp.dll" afterDir="false" />
@@ -18,7 +17,6 @@
       <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/original.dll" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/original.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/original.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/original.pdb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/resources" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/resources" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/canApp.csproj.CoreCompileInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/canApp.csproj.CoreCompileInputs.cache" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/canApp.dll" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/canApp.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/canApp.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/canApp.pdb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/ref/canApp.dll" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/ref/canApp.dll" afterDir="false" />
@@ -29,7 +27,20 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="DisabledMethodsStorage">
+    <option name="disabledMethods">
+      <set>
+        <option value="System.IO.Ports : System.IO.Ports.SerialPort : ReadLine ()" />
+        <option value="System.Private.CoreLib : System.Exception : ToString ()" />
+      </set>
+    </option>
+  </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/308b3f9d78e5d85dd7642bd35bea39c2b1bc805212ce6fe93e79ca948b72a5/Encoding.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/9e48c385a0f8c4d27705158a41832ed686216b07b40ba171e89b41411bcc4dc/RxApp.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/a3c6488c4b7bbbe69cfda43629ff542fa638a712e4b18b6123e8c3a882ed7a/Layoutable.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/ad5967277fc4c8d2aaab3eaceeafafc078fc6a799b6a209633f13888f2b146c/TopLevel.cs" root0="SKIP_HIGHLIGHTING" />
@@ -37,6 +48,9 @@
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/d1b4ef4f84adf03b79eb1ac859431fcec0ac8a5dfee5a46db3f9613f56abadb/SerialPort.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/ec9cbb41e7c431e6de747cc3eb514627fd64fb0a57fae8952b4a2d5573/System.IO.Ports.notsupported.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/f36724d2e12b56ff0d73dd63d47dd2212a2c78223d4a2b475d856c31ae8cd/ReactiveObject.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/f4e4bb5f4d567d61606dc94c5e882ff27d5f24868e79fbbe54dcc9531afaa92/SerialStream.Unix.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/f9fb095c5b770259d59c0a9b4ae5e82db670824b1394d743144bc86c542c/Interop.Generated.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/fda31c1252b4c1a4a7e5afa061a23363bd9ed3b3999b4aad8f46b519c3b51d3/Thread.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -98,6 +112,7 @@
       <workItem from="1682279742550" duration="194000" />
       <workItem from="1683099249128" duration="29226000" />
       <workItem from="1683386669609" duration="10175000" />
+      <workItem from="1683450227607" duration="6891000" />
     </task>
     <servers />
   </component>
@@ -121,26 +136,13 @@
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/canApp/ViewModels/MainWindowViewModel.cs</url>
-          <line>59</line>
-          <properties documentPath="$PROJECT_DIR$/canApp/ViewModels/MainWindowViewModel.cs" initialLine="59" containingFunctionPresentation="lambda expression inside constructor 'MainWindowViewModel'">
-            <startOffsets>
-              <option value="1513" />
-            </startOffsets>
-            <endOffsets>
-              <option value="1567" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="23" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
     <watches-manager>
       <configuration name="DotNetProject">
         <watch expression="ComList" language="C#" />
+        <watch expression="message.Length" language="C#" />
+        <watch expression="_serial.ReadExisting()" language="C#" />
+        <watch expression="_serial.ReadLine()" language="C#" />
+        <watch expression="hexstring" language="C#" />
       </configuration>
     </watches-manager>
   </component>
