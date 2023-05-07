@@ -23,7 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "string.h"
 #include "stdio.h"
-
+#include "stdlib.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -33,6 +33,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+#define UART_RX_BUFFER 32
+
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -41,9 +45,13 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+
+
 CAN_HandleTypeDef hcan;
 
 UART_HandleTypeDef huart2;
+DMA_HandleTypeDef hdma_usart2_rx;
+DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
 
@@ -53,23 +61,31 @@ CAN_TxHeaderTypeDef Button_TxHeader;
 
 uint32_t TxMailbox;
 
+uint16_t uartToCanMsg_ID = 0;
+uint8_t uartToCanMsg_DLC = 0;
+uint8_t uartToCanMsg_Data[8] = {0};
+
+uint16_t canToUartMsg_ID = 0;
+uint8_t canToUartMsg_DLC = 0;
+uint8_t canToUartMsg_Data[8] = {0};
+
 uint8_t TxData[8];
 uint8_t RxData[8];
-
+uint8_t uartMessageState = 0u;
 uint8_t led_state = 0;
 uint8_t can_status = 0;
 uint8_t uart_status = 0;
-uint16_t msg_id = 0;
-uint8_t converted_msg[8] = {0};
 uint8_t button_msg[8] = {0};
-uint8_t msg_dlc = 0;
 
+uint8_t UartRxBuffer[UART_RX_BUFFER];
+uint8_t MainBuf[20];
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_CAN_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
@@ -86,12 +102,55 @@ int __io_putchar(int ch)
     return 1;
 }
 
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
+
+	if(huart->Instance == USART2){
+		memcpy(MainBuf, UartRxBuffer, Size);
+		if(UartRxBuffer > 0){
+			memset(UartRxBuffer, 0, UART_RX_BUFFER);
+			vConvertToCan(Size);
+
+		}
+
+		HAL_UARTEx_ReceiveToIdle_DMA(&huart2, UartRxBuffer, UART_RX_BUFFER);
+
+	}
+
+}
+
+uint8_t bytesSplitter = 0;
+
+void vConvertToCan(uint16_t size){
+
+	for(int i=0; i < size; i++){
+			if(i == 0){
+				uint8_t buildID[5] = {0};
+				for(int j=0; j < 5; j++){
+					buildID[j] = MainBuf[j];
+
+				}
+				uartToCanMsg_ID = (uint16_t)strtol(buildID, NULL, 16);
+			} else if(i == 1){
+				uint8_t buildDLC[4] = {0};
+				for(int j=0; j < 4; j++){
+					buildDLC[j] = MainBuf[j+6];
+					}
+				uartToCanMsg_DLC = (uint8_t)strtol(buildDLC, NULL, 16);
+
+			}
+
+
+		;
+	}
+
+}
+
 void vPrint_message(){
-	printf("%04x ", msg_id);
-	printf("%02x ", msg_dlc);
-	for(int i = 0; i < sizeof(converted_msg); i++)
+	printf("%04x ", canToUartMsg_ID);
+	printf("%02x ", canToUartMsg_DLC);
+	for(int i = 0; i < sizeof(canToUartMsg_Data); i++)
 		{
-					printf("%02x ", converted_msg[i]);
+					printf("%02x ", canToUartMsg_Data[i]);
 		} printf("\n\r");
 	}
 
@@ -100,16 +159,16 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	can_status += HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData);
 	if(can_status == 0){
 
-		msg_id = RxHeader.StdId;
-		msg_dlc = RxHeader.DLC;
+		canToUartMsg_ID = RxHeader.StdId;
+		canToUartMsg_DLC= RxHeader.DLC;
 
-		if (msg_dlc != 0) {
+		if (canToUartMsg_DLC != 0) {
 			int i;
-			for(i=0; i < sizeof(converted_msg); i++){
-				converted_msg[i] = RxData[i];
+			for(i=0; i < sizeof(canToUartMsg_Data); i++){
+				canToUartMsg_Data[i] = RxData[i];
 			}
 		} else{
-			memset(converted_msg, 0, 8);
+			memset(canToUartMsg_Data, 0, 8);
 		}
 		vPrint_message();
 
@@ -174,6 +233,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_CAN_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
@@ -181,6 +241,8 @@ int main(void)
 	can_status += HAL_CAN_Start(&hcan);
 	can_status += HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
 	vCan_messages_init();
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart2, UartRxBuffer, UART_RX_BUFFER);
+
 
   /* USER CODE END 2 */
 
@@ -189,7 +251,6 @@ int main(void)
   while (1)
   {
 	  //HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox);
-	  HAL_Delay(100);
 
     /* USER CODE END WHILE */
 
@@ -330,6 +391,25 @@ static void MX_USART2_UART_Init(void)
   /* USER CODE BEGIN USART2_Init 2 */
 
   /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel6_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
+  /* DMA1_Channel7_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
 
 }
 

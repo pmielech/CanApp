@@ -56,7 +56,7 @@ public class MainWindowViewModel : ViewModelBase
                 try
                 {
                     // Send the binary data out the port
-                    byte[] hexstring = Encoding.ASCII.GetBytes(UserInput);
+                    byte[] hexstring = Encoding.ASCII.GetBytes(UserInput += '\n');
                     //There is a intermitant problem that I came across
                     //If I write more than one byte in succesion without a 
                     //delay the PIC i'm communicating with will Crash
@@ -71,7 +71,7 @@ public class MainWindowViewModel : ViewModelBase
                     }
                     
                     var date = DateTime.Now.ToString("HH:mm:ss");
-                    SerialData += $"==> TX<{date}> ~ {UserInput}\n";
+                    SerialData += $"==> TX<{date}> ~ {UserInput}";
                     UserInput = "";
 
                 }
