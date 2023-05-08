@@ -137,11 +137,30 @@ void vConvertToCan(uint16_t size){
 					}
 				uartToCanMsg_DLC = (uint8_t)strtol(buildDLC, NULL, 16);
 
+			} else if(i > 1){
+
+				for(int j=0; j < uartToCanMsg_DLC; j++){
+					uint8_t buildByte[4] = {0};
+					for(int c=0; c < 4; c++){
+						buildByte[j] = MainBuf[c+10];
+					}
+					uartToCanMsg_Data[j] = (uint8_t)strtol(buildByte[j], NULL, 16);
+
+					}
+
+				break;
 			}
 
-
-		;
 	}
+
+	TxHeader.DLC = uartToCanMsg_DLC;
+	TxHeader.ExtId = 0;
+	TxHeader.IDE = CAN_ID_STD;
+	TxHeader.RTR = CAN_RTR_DATA;
+	TxHeader.StdId = uartToCanMsg_ID;
+	TxHeader.TransmitGlobalTime = DISABLE;
+
+	can_status += HAL_CAN_AddTxMessage(&hcan, &TxHeader, uartToCanMsg_Data, &TxMailbox);
 
 }
 
@@ -183,6 +202,14 @@ void vCan_messages_init(){
 	Button_TxHeader.RTR = CAN_RTR_DATA;
 	Button_TxHeader.StdId = 0x350;
 	Button_TxHeader.TransmitGlobalTime = DISABLE;
+
+	TxHeader.DLC = 0x00;
+	TxHeader.ExtId = 0;
+	TxHeader.IDE = CAN_ID_STD;
+	TxHeader.RTR = CAN_RTR_DATA;
+	TxHeader.StdId = 0x500;
+	TxHeader.TransmitGlobalTime = DISABLE;
+
 
 
 }
