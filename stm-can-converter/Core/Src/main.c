@@ -21,9 +21,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "string.h"
-#include "stdio.h"
-#include "stdlib.h"
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -108,8 +108,8 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 		memcpy(MainBuf, UartRxBuffer, Size);
 		if(UartRxBuffer > 0){
 			memset(UartRxBuffer, 0, UART_RX_BUFFER);
-			vConvertToCan(Size);
 
+			vConvertToCan(&Size);
 		}
 
 		HAL_UARTEx_ReceiveToIdle_DMA(&huart2, UartRxBuffer, UART_RX_BUFFER);
@@ -121,36 +121,28 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 uint8_t bytesSplitter = 0;
 
 void vConvertToCan(uint16_t size){
-
-	for(int i=0; i < size; i++){
+	uint8_t buildID[5] = {0};
+	for(int j=0; j < 5; j++){
+		buildID[j] = MainBuf[j];
+	} sscanf(buildID, "%05x", &uartToCanMsg_ID);
+	for(int i=0; i < (size-6)/4; i++){
 			if(i == 0){
-				uint8_t buildID[5] = {0};
-				for(int j=0; j < 5; j++){
-					buildID[j] = MainBuf[j];
-
-				}
-				uartToCanMsg_ID = (uint16_t)strtol(buildID, NULL, 16);
-			} else if(i == 1){
 				uint8_t buildDLC[4] = {0};
 				for(int j=0; j < 4; j++){
 					buildDLC[j] = MainBuf[j+6];
 					}
-				uartToCanMsg_DLC = (uint8_t)strtol(buildDLC, NULL, 16);
-
-			} else if(i > 1){
+				sscanf(buildDLC, "%04x", &uartToCanMsg_DLC);
+			} else if(i >= 1){
 
 				for(int j=0; j < uartToCanMsg_DLC; j++){
 					uint8_t buildByte[4] = {0};
 					for(int c=0; c < 4; c++){
-						buildByte[j] = MainBuf[c+10];
-					}
-					uartToCanMsg_Data[j] = (uint8_t)strtol(buildByte[j], NULL, 16);
-
+						buildByte[j+c] = MainBuf[c+11];
+					} sscanf(buildByte, "%04x", &uartToCanMsg_Data[j]);
 					}
 
 				break;
 			}
-
 	}
 
 	TxHeader.DLC = uartToCanMsg_DLC;
