@@ -34,7 +34,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define UART_RX_BUFFER 32
+#define UART_RX_BUFFER 20
+//#define UART_RX_BUFFER 20
 
 
 /* USER CODE END PD */
@@ -45,13 +46,10 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-
-
 CAN_HandleTypeDef hcan;
 
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_rx;
-DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
 
@@ -77,8 +75,10 @@ uint8_t can_status = 0;
 uint8_t uart_status = 0;
 uint8_t button_msg[8] = {0};
 
-uint8_t UartRxBuffer[UART_RX_BUFFER];
-uint8_t MainBuf[20];
+uint8_t UartRxBuffer[UART_RX_BUFFER] = {0};
+uint8_t ReceiveBuf[UART_RX_BUFFER];
+uint8_t OperationalBuf[UART_RX_BUFFER];
+
 
 /* USER CODE END PV */
 
@@ -102,34 +102,16 @@ int __io_putchar(int ch)
     return 1;
 }
 
-void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
-
-	if(huart->Instance == USART2){
-		memcpy(MainBuf, UartRxBuffer, Size);
-		if(UartRxBuffer > 0){
-			memset(UartRxBuffer, 0, UART_RX_BUFFER);
-
-			vConvertToCan(&Size);
-		}
-
-		HAL_UARTEx_ReceiveToIdle_DMA(&huart2, UartRxBuffer, UART_RX_BUFFER);
-
-	}
-
-}
-
-uint8_t bytesSplitter = 0;
-
-void vConvertToCan(uint16_t size){
+void vConvertToCan(uint16_t *size){
 	uint8_t buildID[5] = {0};
 	for(int j=0; j < 5; j++){
-		buildID[j] = MainBuf[j];
+		buildID[j] = OperationalBuf[j];
 	} sscanf(buildID, "%05x", &uartToCanMsg_ID);
-	for(int i=0; i < (size-6)/4; i++){
+	for(int i=0; i < ((uint)size-6)/4; i++){
 			if(i == 0){
 				uint8_t buildDLC[4] = {0};
 				for(int j=0; j < 4; j++){
-					buildDLC[j] = MainBuf[j+6];
+					buildDLC[j] = OperationalBuf[j+6];
 					}
 				sscanf(buildDLC, "%04x", &uartToCanMsg_DLC);
 			} else if(i >= 1){
@@ -137,7 +119,7 @@ void vConvertToCan(uint16_t size){
 				for(int j=0; j < uartToCanMsg_DLC; j++){
 					uint8_t buildByte[4] = {0};
 					for(int c=0; c < 4; c++){
-						buildByte[j+c] = MainBuf[c+11];
+						buildByte[j+c] = OperationalBuf[c+11];
 					} sscanf(buildByte, "%04x", &uartToCanMsg_Data[j]);
 					}
 
@@ -151,10 +133,45 @@ void vConvertToCan(uint16_t size){
 	TxHeader.RTR = CAN_RTR_DATA;
 	TxHeader.StdId = uartToCanMsg_ID;
 	TxHeader.TransmitGlobalTime = DISABLE;
-
+	memset(OperationalBuf, 0, UART_RX_BUFFER);
 	can_status += HAL_CAN_AddTxMessage(&hcan, &TxHeader, uartToCanMsg_Data, &TxMailbox);
 
 }
+
+void resetUartDmaRxBuffer(UART_HandleTypeDef  *huart, uint16_t Size) {
+    __HAL_DMA_DISABLE(huart->hdmarx);
+    huart->hdmarx->Instance->CNDTR = Size; // reset counter
+    __HAL_DMA_ENABLE(huart->hdmarx);
+}
+
+
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
+
+	static uint8_t callbackHandler = 0;
+
+	if(huart->Instance == USART2 && strlen(UartRxBuffer) > 10 && strstr(UartRxBuffer, '\n')){
+		callbackHandler = 0;
+		memcpy(OperationalBuf, UartRxBuffer, UART_RX_BUFFER);
+		memset(UartRxBuffer, 0, UART_RX_BUFFER);
+		vConvertToCan(&Size);
+		resetUartDmaRxBuffer(&huart2, UART_RX_BUFFER);
+
+		HAL_UARTEx_ReceiveToIdle_DMA(&huart2, UartRxBuffer, UART_RX_BUFFER);
+		__HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
+
+	} else {
+		callbackHandler++;
+	}
+
+	if(callbackHandler > 3){
+		memset(UartRxBuffer, 0, UART_RX_BUFFER);
+		resetUartDmaRxBuffer(&huart2, UART_RX_BUFFER);
+		HAL_UARTEx_ReceiveToIdle_DMA(&huart2, UartRxBuffer, UART_RX_BUFFER);
+		__HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
+	}
+}
+
+uint8_t bytesSplitter = 0;
 
 void vPrint_message(){
 	printf("%04x ", canToUartMsg_ID);
@@ -205,14 +222,11 @@ void vCan_messages_init(){
 
 
 }
-
 void vButton_message(){
 	button_msg[0] = led_state;
 	can_status += HAL_CAN_AddTxMessage(&hcan, &Button_TxHeader, button_msg, &TxMailbox);
 
 }
-
-
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	if(GPIO_Pin == BLUE_BUTTON_Pin){
@@ -261,6 +275,7 @@ int main(void)
 	can_status += HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
 	vCan_messages_init();
 	HAL_UARTEx_ReceiveToIdle_DMA(&huart2, UartRxBuffer, UART_RX_BUFFER);
+	__HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
 
 
   /* USER CODE END 2 */
@@ -426,9 +441,6 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel6_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
-  /* DMA1_Channel7_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
 
 }
 
