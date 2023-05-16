@@ -8,22 +8,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="91771189-1256-4bcc-a05c-5dd2044336f5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.canApp/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.canApp/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../stm-can-converter/Core/Inc/stm32f3xx_it.h" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-converter/Core/Inc/stm32f3xx_it.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../stm-can-converter/Core/Src/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-converter/Core/Src/main.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../stm-can-converter/Core/Src/stm32f3xx_hal_msp.c" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-converter/Core/Src/stm32f3xx_hal_msp.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../stm-can-converter/Core/Src/stm32f3xx_it.c" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-converter/Core/Src/stm32f3xx_it.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../stm-can-converter/stm-can-converter.ioc" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-converter/stm-can-converter.ioc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../stm-can-source/Core/Src/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Core/Src/main.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../stm-can-source/Core/Src/stm32f3xx_hal_msp.c" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Core/Src/stm32f3xx_hal_msp.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../stm-can-source/Debug/Core/Src/main.o" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Debug/Core/Src/main.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../stm-can-source/Debug/Core/Src/main.su" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Debug/Core/Src/main.su" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../stm-can-source/Debug/Core/Src/stm32f3xx_hal_msp.o" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Debug/Core/Src/stm32f3xx_hal_msp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../stm-can-source/Debug/Core/Src/stm32f3xx_hal_msp.su" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Debug/Core/Src/stm32f3xx_hal_msp.su" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../stm-can-source/Debug/stm-can-source.elf" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Debug/stm-can-source.elf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../stm-can-source/Debug/stm-can-source.list" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Debug/stm-can-source.list" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../stm-can-source/Debug/stm-can-source.map" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Debug/stm-can-source.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../stm-can-source/stm-can-source.ioc" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/stm-can-source.ioc" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -119,7 +104,7 @@
       <workItem from="1684222389695" duration="892000" />
       <workItem from="1684226284390" duration="2415000" />
       <workItem from="1684240725544" duration="624000" />
-      <workItem from="1684263994192" duration="309000" />
+      <workItem from="1684263994192" duration="923000" />
     </task>
     <servers />
   </component>

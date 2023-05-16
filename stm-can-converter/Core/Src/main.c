@@ -103,26 +103,25 @@ int __io_putchar(int ch)
 }
 
 void vConvertToCan(uint16_t *size){
-	uint8_t buildID[5] = {0};
-	for(int j=0; j < 5; j++){
+	uint8_t buildID[4] = {0};
+	for(int j=0; j < 4; j++){
 		buildID[j] = OperationalBuf[j];
-	} sscanf(buildID, "%05x", &uartToCanMsg_ID);
+	} sscanf(buildID, "%04x", &uartToCanMsg_ID);
 	for(int i=0; i < ((uint)size-6)/4; i++){
 			if(i == 0){
-				uint8_t buildDLC[4] = {0};
-				for(int j=0; j < 4; j++){
-					buildDLC[j] = OperationalBuf[j+6];
+				uint8_t buildDLC[2] = {0};
+				for(int j=0; j < 2; j++){
+					buildDLC[j] = OperationalBuf[j+5];
 					}
-				sscanf(buildDLC, "%04x", &uartToCanMsg_DLC);
+				sscanf(buildDLC, "%02x", &uartToCanMsg_DLC);
 			} else if(i >= 1){
 
 				for(int j=0; j < uartToCanMsg_DLC; j++){
-					uint8_t buildByte[4] = {0};
-					for(int c=0; c < 4; c++){
-						buildByte[j+c] = OperationalBuf[c+11];
-					} sscanf(buildByte, "%04x", &uartToCanMsg_Data[j]);
+					uint8_t buildByte[2] = {0};
+					for(int c=0; c < 2; c++){
+						buildByte[j+c] = OperationalBuf[c+8];
+					} sscanf(buildByte, "%02x", &uartToCanMsg_Data[j]);
 					}
-
 				break;
 			}
 	}
