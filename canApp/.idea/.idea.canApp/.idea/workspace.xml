@@ -7,9 +7,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="91771189-1256-4bcc-a05c-5dd2044336f5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../stm-can-converter/Core/Src/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-converter/Core/Src/main.c" afterDir="false" />
-    </list>
+    <list default="true" id="91771189-1256-4bcc-a05c-5dd2044336f5" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -104,7 +102,7 @@
       <workItem from="1684222389695" duration="892000" />
       <workItem from="1684226284390" duration="2415000" />
       <workItem from="1684240725544" duration="624000" />
-      <workItem from="1684263994192" duration="923000" />
+      <workItem from="1684263994192" duration="1543000" />
     </task>
     <servers />
   </component>

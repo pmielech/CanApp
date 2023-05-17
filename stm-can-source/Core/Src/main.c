@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,21 +51,30 @@ TIM_HandleTypeDef htim15;
 TIM_HandleTypeDef htim16;
 
 /* USER CODE BEGIN PV */
-#define ADC_SAMPLES 10
-uint16_t adc_buffer[ADC_SAMPLES * 2 * 2] = {0};
-
-
+#define ADC_SAMPLES 	10
+#define ADC_BUF_LEN 	2
+#define MSG_BUFFER_SIZE 8
+#define ADC_RES 		4096.0f
+#define REF_VOL 		3.33f
+#define VOLT_AT_T25		1.43f
+#define AVG_SLOPE		4.30f
+#define TEMP_CONST		25.0f
+#define INTERNAL_VOLT   1.21f
 
 CAN_TxHeaderTypeDef TxHeader;
 CAN_RxHeaderTypeDef RxHeader;
+CAN_RxHeaderTypeDef OpHeader;
 CAN_TxHeaderTypeDef heartbeat_msgTxHeader;
 
+
 uint32_t TxMailbox;
-uint8_t TxData[8] = {0};
-uint8_t RxData[8] = {0};
+uint8_t TxData[MSG_BUFFER_SIZE] = {0};
+uint8_t RxData[MSG_BUFFER_SIZE] = {0};
+uint8_t OpData[MSG_BUFFER_SIZE] = {0};
 uint8_t can_status = 0;
-uint8_t heartbeat[8] = {0};
-uint8_t nodeId = 0x77;
+uint8_t heartbeat[MSG_BUFFER_SIZE] = {0};
+uint8_t nodeId = 0x05;
+uint16_t adcData[ADC_BUF_LEN];
 
 
 /* USER CODE END PV */
@@ -90,16 +100,29 @@ uint8_t ucHeartbeat_message(){
 	return HAL_CAN_AddTxMessage(&hcan, &heartbeat_msgTxHeader, heartbeat, &TxMailbox);
 }
 
+uint8_t usGetTemperatureValue(){
+
+	return (uint8_t)roundf((VOLT_AT_T25 - ((float)adcData[0] * REF_VOL/ADC_RES))/AVG_SLOPE + TEMP_CONST);
+
+}
+
+uint8_t usGetRefVoltValue(){
+
+	return (uint8_t)(((REF_VOL * (float)adcData[1])/ADC_RES) * 100.0f);
+}
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim == &htim16) {
 	  can_status += ucHeartbeat_message();
+	  //RxData[0] = usGetTemperatureValue();
+	  //RxData[1] = usGetRefVoltValue();
+
   }
 
 }
 
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
 	;
 
 }
@@ -109,12 +132,13 @@ void HAL_CAN_RxFifo1FullCallback(CAN_HandleTypeDef *hcan){
 	;
 }
 
+
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
 	can_status = HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData);
-
 	switch(RxHeader.StdId){
-	case 0x400:
+	case 0x250:
+		RxData[0] = usGetRefVoltValue();
 		break;
 
 	case 0x350:
@@ -122,7 +146,11 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		break;
 
 	case 0x500:
+		RxData[0] = usGetTemperatureValue();
 		break;
+	case 0x600:
+			//#TODO change can speed
+			break;
 
 	default:
 		break;
@@ -135,11 +163,10 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	TxHeader.RTR = CAN_RTR_DATA;
 	TxHeader.StdId = RxHeader.StdId + nodeId;
 	TxHeader.TransmitGlobalTime = DISABLE;
-	for(int i=0; i < TxHeader.DLC; i++){
-		TxData[i] = RxData[i];
-	}
+	memcpy(TxData, RxData, MSG_BUFFER_SIZE);
 	can_status += HAL_CAN_AddTxMessage(hcan, &TxHeader, &TxData[0], &TxMailbox);
-	memset(RxData, 0, 8);
+	memset(RxData, 0, MSG_BUFFER_SIZE);
+
 
 }
 
@@ -149,7 +176,7 @@ void vCan_messages_init(){
 	heartbeat_msgTxHeader.ExtId = 0;
 	heartbeat_msgTxHeader.IDE = CAN_ID_STD;
 	heartbeat_msgTxHeader.RTR = CAN_RTR_DATA;
-	heartbeat_msgTxHeader.StdId = 0x400 + nodeId;
+	heartbeat_msgTxHeader.StdId = 0x700 + nodeId;
 	heartbeat_msgTxHeader.TransmitGlobalTime = DISABLE;
 
 	TxHeader.DLC = 0x00;
@@ -160,8 +187,6 @@ void vCan_messages_init(){
 	TxHeader.TransmitGlobalTime = DISABLE;
 
 }
-
-
 
 
 /* USER CODE END 0 */
@@ -206,8 +231,13 @@ int main(void)
   can_status += HAL_CAN_Start(&hcan);
   can_status += HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
   HAL_TIM_Base_Start_IT(&htim16);
-  HAL_TIM_Base_Start_IT(&htim15);
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_buffer, ADC_SAMPLES * 2 * 2);
+
+
+  HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adcData, ADC_BUF_LEN);
+
+  //HAL_TIM_Base_Start(&htim15); /* This timer starts ADC conversion */
+
 
   vCan_messages_init();
 
@@ -299,13 +329,13 @@ static void MX_ADC1_Init(void)
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
   hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
-  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_FALLING;
-  hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T15_TRGO;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.NbrOfConversion = 2;
   hadc1.Init.DMAContinuousRequests = ENABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc1.Init.LowPowerAutoWait = DISABLE;
@@ -331,6 +361,14 @@ static void MX_ADC1_Init(void)
   sConfig.SamplingTime = ADC_SAMPLETIME_601CYCLES_5;
   sConfig.OffsetNumber = ADC_OFFSET_NONE;
   sConfig.Offset = 0;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Rank = ADC_REGULAR_RANK_2;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -477,7 +515,7 @@ static void MX_TIM15_Init(void)
   {
     Error_Handler();
   }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim15, &sMasterConfig) != HAL_OK)
   {

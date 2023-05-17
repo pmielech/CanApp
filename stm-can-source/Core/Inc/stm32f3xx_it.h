@@ -60,6 +60,7 @@ void ADC1_2_IRQHandler(void);
 void USB_LP_CAN_RX0_IRQHandler(void);
 void CAN_RX1_IRQHandler(void);
 void CAN_SCE_IRQHandler(void);
+void TIM1_BRK_TIM15_IRQHandler(void);
 void TIM1_UP_TIM16_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
