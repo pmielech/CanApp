@@ -33,24 +33,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc1;
-DMA_HandleTypeDef hdma_adc1;
-
-CAN_HandleTypeDef hcan;
-
-TIM_HandleTypeDef htim3;
-TIM_HandleTypeDef htim15;
-TIM_HandleTypeDef htim16;
-
-/* USER CODE BEGIN PV */
 #define ADC_SAMPLES 	10
 #define ADC_BUF_LEN 	2
 #define MSG_BUFFER_SIZE 8
@@ -60,6 +42,35 @@ TIM_HandleTypeDef htim16;
 #define AVG_SLOPE		4.30f
 #define TEMP_CONST		25.0f
 #define INTERNAL_VOLT   1.21f
+
+typedef enum{
+	speed_125_KBITS,
+	speed_250_KBITS,
+	speed_500_KBITS,
+	speed_1000_KBITS
+
+}can_speed_t;
+
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
+ADC_HandleTypeDef hadc2;
+DMA_HandleTypeDef hdma_adc1;
+DMA_HandleTypeDef hdma_adc2;
+
+CAN_HandleTypeDef hcan;
+
+TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim4;
+TIM_HandleTypeDef htim16;
+
+/* USER CODE BEGIN PV */
 
 CAN_TxHeaderTypeDef TxHeader;
 CAN_RxHeaderTypeDef RxHeader;
@@ -74,7 +85,14 @@ uint8_t OpData[MSG_BUFFER_SIZE] = {0};
 uint8_t can_status = 0;
 uint8_t heartbeat[MSG_BUFFER_SIZE] = {0};
 uint8_t nodeId = 0x05;
+uint16_t internalData[ADC_BUF_LEN];
 uint16_t adcData[ADC_BUF_LEN];
+uint16_t opAdcData[ADC_BUF_LEN];
+uint8_t canSpeedOnStartup __attribute__ ((section (".no_init")));;
+uint8_t timerHandler = 0;
+uint8_t cyclicMessage = 0;
+uint8_t pwmValue = 0;
+
 
 
 /* USER CODE END PV */
@@ -87,7 +105,8 @@ static void MX_CAN_Init(void);
 static void MX_TIM16_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM3_Init(void);
-static void MX_TIM15_Init(void);
+static void MX_TIM4_Init(void);
+static void MX_ADC2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -95,62 +114,118 @@ static void MX_TIM15_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-uint8_t ucHeartbeat_message(){
-	heartbeat[0] = 0;
+uint8_t usHeartbeat_message(){
+
+	memcpy(opAdcData, adcData, ADC_BUF_LEN);
+	TxData[0] = (opAdcData[0] >> 0) & 0xFF;
+	TxData[1] = (opAdcData[0] >> 8) & 0xFF;
+
+	TxHeader.DLC = 0x02;
+	TxHeader.ExtId = 0;
+	TxHeader.IDE = CAN_ID_STD;
+	TxHeader.RTR = CAN_RTR_DATA;
+	TxHeader.StdId = 200 + nodeId;
+	TxHeader.TransmitGlobalTime = DISABLE;
+	return HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox);
+
+}
+
+uint8_t usBuildAdc_message(){
+
+
 	return HAL_CAN_AddTxMessage(&hcan, &heartbeat_msgTxHeader, heartbeat, &TxMailbox);
 }
 
 uint8_t usGetTemperatureValue(){
 
-	return (uint8_t)roundf((VOLT_AT_T25 - ((float)adcData[0] * REF_VOL/ADC_RES))/AVG_SLOPE + TEMP_CONST);
+	return (uint8_t)roundf((VOLT_AT_T25 - ((float)internalData[0] * REF_VOL/ADC_RES))/AVG_SLOPE + TEMP_CONST);
 
 }
 
 uint8_t usGetRefVoltValue(){
 
-	return (uint8_t)(((REF_VOL * (float)adcData[1])/ADC_RES) * 100.0f);
+	return (uint8_t)(((REF_VOL * (float)internalData[1])/ADC_RES) * 100.0f);
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim == &htim16) {
-	  can_status += ucHeartbeat_message();
-	  //RxData[0] = usGetTemperatureValue();
-	  //RxData[1] = usGetRefVoltValue();
+	  if(cyclicMessage){
+		  can_status += usBuildAdc_message();
+	  }
+	  if(timerHandler % 2 == 0){
+		  can_status += usHeartbeat_message();
+	  }
+
+	  if(timerHandler == 4 ){
+		  timerHandler = 0;
+	  } else{
+		  timerHandler++;
+	  }
+
 
   }
 
 }
 
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
-	;
-
-}
-
-void HAL_CAN_RxFifo1FullCallback(CAN_HandleTypeDef *hcan){
-
-	;
-}
-
-
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
 	can_status = HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData);
 	switch(RxHeader.StdId){
+	case 0x100:
+		NVIC_SystemReset();
+		break;
+
 	case 0x250:
-		RxData[0] = usGetRefVoltValue();
+		if(RxData[0] >= 0 && RxData[0] <= 1){
+			cyclicMessage = RxData[0];
+		}else if(RxData[0] == 0xFF){
+			RxData[0] = cyclicMessage;
+		}
+		break;
+
+	case 0x300:
+		if(RxData[0] >= 0 && RxData[0] <= 250){
+			pwmValue = (uint8_t)RxData[0];
+		   __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, pwmValue);
+		} else if(RxData[0] == 0xFF){
+			RxData[0] = pwmValue;
+		}
 		break;
 
 	case 0x350:
-		HAL_GPIO_WritePin(INTERNAL_LED_GPIO_Port, INTERNAL_LED_Pin, RxData[0]);
+		if(RxData[0] >= 0 && RxData[0] <= 1){
+			HAL_GPIO_WritePin(INTERNAL_LED_GPIO_Port, INTERNAL_LED_Pin, RxData[0]);
+		}
+		else if(RxData[0] == 0xFF){
+			RxData[0] = HAL_GPIO_ReadPin(INTERNAL_LED_GPIO_Port, INTERNAL_LED_Pin);
+		}
 		break;
 
 	case 0x500:
 		RxData[0] = usGetTemperatureValue();
 		break;
+
+	case 0x550:
+		if(RxData[0] >= 0 && RxData[0] <= 1){
+			HAL_GPIO_WritePin(USER_GPIO_GPIO_Port, USER_GPIO_Pin, RxData[0]);
+		}
+		else if(RxData[0] == 0xFF){
+			RxData[0] = HAL_GPIO_ReadPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+		}
+		break;
+
 	case 0x600:
-			//#TODO change can speed
-			break;
+		if(RxData[0] >= 0 && RxData[0] <= 3){
+			canSpeedOnStartup = (uint8_t)RxData[0];
+		} else {
+			RxData[0] = 0x80;
+		}
+		break;
+
+	case 0x650:
+		RxData[0] = usGetRefVoltValue();
+		break;
 
 	default:
 		break;
@@ -166,7 +241,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	memcpy(TxData, RxData, MSG_BUFFER_SIZE);
 	can_status += HAL_CAN_AddTxMessage(hcan, &TxHeader, &TxData[0], &TxMailbox);
 	memset(RxData, 0, MSG_BUFFER_SIZE);
-
 
 }
 
@@ -188,6 +262,51 @@ void vCan_messages_init(){
 
 }
 
+
+void setCanSpeed(can_speed_t canSpeed){
+
+	hcan.Instance = CAN;
+	switch(canSpeed){
+
+	case speed_125_KBITS:
+		hcan.Init.Prescaler = 72;
+		break;
+
+	case speed_250_KBITS:
+		hcan.Init.Prescaler = 36;
+		break;
+
+	case speed_500_KBITS:
+		hcan.Init.Prescaler = 18;
+		break;
+
+	case speed_1000_KBITS:
+		hcan.Init.Prescaler = 9;
+		break;
+
+	default:
+		hcan.Init.Prescaler = 18;
+		canSpeedOnStartup = 2;
+		break;
+
+	}
+
+	hcan.Init.Mode = CAN_MODE_NORMAL;
+	hcan.Init.SyncJumpWidth = CAN_SJW_1TQ;
+	hcan.Init.TimeSeg1 = CAN_BS1_2TQ;
+	hcan.Init.TimeSeg2 = CAN_BS2_1TQ;
+	hcan.Init.TimeTriggeredMode = DISABLE;
+	hcan.Init.AutoBusOff = DISABLE;
+	hcan.Init.AutoWakeUp = DISABLE;
+	hcan.Init.AutoRetransmission = DISABLE;
+	hcan.Init.ReceiveFifoLocked = DISABLE;
+	hcan.Init.TransmitFifoPriority = DISABLE;
+	if (HAL_CAN_Init(&hcan) != HAL_OK)
+	{
+		Error_Handler();
+	}
+
+}
 
 /* USER CODE END 0 */
 
@@ -226,18 +345,20 @@ int main(void)
   MX_TIM16_Init();
   MX_ADC1_Init();
   MX_TIM3_Init();
-  MX_TIM15_Init();
+  MX_TIM4_Init();
+  MX_ADC2_Init();
   /* USER CODE BEGIN 2 */
   can_status += HAL_CAN_Start(&hcan);
   can_status += HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
   HAL_TIM_Base_Start_IT(&htim16);
 
-
   HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adcData, ADC_BUF_LEN);
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)internalData, ADC_BUF_LEN);
 
-  //HAL_TIM_Base_Start(&htim15); /* This timer starts ADC conversion */
+  HAL_ADCEx_Calibration_Start(&hadc2, ADC_SINGLE_ENDED);
+  HAL_ADC_Start_DMA(&hadc2, (uint32_t*)adcData, ADC_BUF_LEN);
 
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
 
   vCan_messages_init();
 
@@ -293,10 +414,9 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_TIM15|RCC_PERIPHCLK_TIM16
-                              |RCC_PERIPHCLK_ADC12|RCC_PERIPHCLK_TIM34;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_TIM16|RCC_PERIPHCLK_ADC12
+                              |RCC_PERIPHCLK_TIM34;
   PeriphClkInit.Adc12ClockSelection = RCC_ADC12PLLCLK_DIV1;
-  PeriphClkInit.Tim15ClockSelection = RCC_TIM15CLK_HCLK;
   PeriphClkInit.Tim16ClockSelection = RCC_TIM16CLK_HCLK;
   PeriphClkInit.Tim34ClockSelection = RCC_TIM34CLK_HCLK;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -380,6 +500,63 @@ static void MX_ADC1_Init(void)
 }
 
 /**
+  * @brief ADC2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC2_Init(void)
+{
+
+  /* USER CODE BEGIN ADC2_Init 0 */
+
+  /* USER CODE END ADC2_Init 0 */
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN ADC2_Init 1 */
+
+  /* USER CODE END ADC2_Init 1 */
+
+  /** Common config
+  */
+  hadc2.Instance = ADC2;
+  hadc2.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
+  hadc2.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc2.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc2.Init.ContinuousConvMode = ENABLE;
+  hadc2.Init.DiscontinuousConvMode = DISABLE;
+  hadc2.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc2.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc2.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc2.Init.NbrOfConversion = 1;
+  hadc2.Init.DMAContinuousRequests = ENABLE;
+  hadc2.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  hadc2.Init.LowPowerAutoWait = DISABLE;
+  hadc2.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
+  if (HAL_ADC_Init(&hadc2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_4;
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+  sConfig.SingleDiff = ADC_SINGLE_ENDED;
+  sConfig.SamplingTime = ADC_SAMPLETIME_601CYCLES_5;
+  sConfig.OffsetNumber = ADC_OFFSET_NONE;
+  sConfig.Offset = 0;
+  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC2_Init 2 */
+
+  /* USER CODE END ADC2_Init 2 */
+
+}
+
+/**
   * @brief CAN Initialization Function
   * @param None
   * @retval None
@@ -388,12 +565,14 @@ static void MX_CAN_Init(void)
 {
 
   /* USER CODE BEGIN CAN_Init 0 */
+	setCanSpeed(canSpeedOnStartup);
 
   /* USER CODE END CAN_Init 0 */
 
   /* USER CODE BEGIN CAN_Init 1 */
 
   /* USER CODE END CAN_Init 1 */
+	/*
   hcan.Instance = CAN;
   hcan.Init.Prescaler = 18;
   hcan.Init.Mode = CAN_MODE_NORMAL;
@@ -410,6 +589,7 @@ static void MX_CAN_Init(void)
   {
     Error_Handler();
   }
+  */
   /* USER CODE BEGIN CAN_Init 2 */
 
   CAN_FilterTypeDef can_filter_config;
@@ -482,48 +662,51 @@ static void MX_TIM3_Init(void)
 }
 
 /**
-  * @brief TIM15 Initialization Function
+  * @brief TIM4 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_TIM15_Init(void)
+static void MX_TIM4_Init(void)
 {
 
-  /* USER CODE BEGIN TIM15_Init 0 */
+  /* USER CODE BEGIN TIM4_Init 0 */
 
-  /* USER CODE END TIM15_Init 0 */
+  /* USER CODE END TIM4_Init 0 */
 
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
 
-  /* USER CODE BEGIN TIM15_Init 1 */
+  /* USER CODE BEGIN TIM4_Init 1 */
 
-  /* USER CODE END TIM15_Init 1 */
-  htim15.Instance = TIM15;
-  htim15.Init.Prescaler = 2000;
-  htim15.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim15.Init.Period = 36000;
-  htim15.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim15.Init.RepetitionCounter = 0;
-  htim15.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-  if (HAL_TIM_Base_Init(&htim15) != HAL_OK)
+  /* USER CODE END TIM4_Init 1 */
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 2880-1;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 250-1;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_PWM_Init(&htim4) != HAL_OK)
   {
     Error_Handler();
   }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim15, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim15, &sMasterConfig) != HAL_OK)
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN TIM15_Init 2 */
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM4_Init 2 */
 
-  /* USER CODE END TIM15_Init 2 */
+  /* USER CODE END TIM4_Init 2 */
+  HAL_TIM_MspPostInit(&htim4);
 
 }
 
@@ -543,7 +726,7 @@ static void MX_TIM16_Init(void)
 
   /* USER CODE END TIM16_Init 1 */
   htim16.Instance = TIM16;
-  htim16.Init.Prescaler = 6000-1;
+  htim16.Init.Prescaler = 3000-1;
   htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim16.Init.Period = 6000-1;
   htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -567,11 +750,15 @@ static void MX_DMA_Init(void)
 
   /* DMA controller clock enable */
   __HAL_RCC_DMA1_CLK_ENABLE();
+  __HAL_RCC_DMA2_CLK_ENABLE();
 
   /* DMA interrupt init */
   /* DMA1_Channel1_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+  /* DMA2_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Channel1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Channel1_IRQn);
 
 }
 
@@ -588,16 +775,17 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(INTERNAL_LED_GPIO_Port, INTERNAL_LED_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, INTERNAL_LED_Pin|USER_GPIO_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : INTERNAL_LED_Pin */
-  GPIO_InitStruct.Pin = INTERNAL_LED_Pin;
+  /*Configure GPIO pins : INTERNAL_LED_Pin USER_GPIO_Pin */
+  GPIO_InitStruct.Pin = INTERNAL_LED_Pin|USER_GPIO_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(INTERNAL_LED_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
