@@ -50,6 +50,13 @@ public class ViewModelBase : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _selectedCom, value);
     }
     
+    private int _selectedSpeed = 0;
+    public int SelectedSpeed
+    {
+        get => _selectedSpeed;
+        set => this.RaiseAndSetIfChanged(ref _selectedSpeed, value);
+    }
+    
     private string _serialData = "";
     public string SerialData
     {

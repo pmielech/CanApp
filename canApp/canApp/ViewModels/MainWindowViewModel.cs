@@ -70,8 +70,7 @@ public class MainWindowViewModel : ViewModelBase
                         Thread.Sleep(1);
                     }
                     
-                    var date = DateTime.Now.ToString("HH:mm:ss");
-                    SerialData += $"==> TX<{date}> ~ {UserInput}";
+                    SerialData += $"==> TX<{DateTime.Now.ToString("HH:mm:ss.ffff")}> ~ {UserInput}";
                     UserInput = "";
 
                 }
@@ -94,7 +93,7 @@ public class MainWindowViewModel : ViewModelBase
             {
                 //TODO Exception when choosing wrong com port (unix) 
                 _serial.PortName = ComList.Items.ElementAt(SelectedCom).Name;
-                _serial.BaudRate = 9600;
+                _serial.BaudRate = 115200;
                 _serial.Handshake = System.IO.Ports.Handshake.None;
                 _serial.Parity = Parity.None;
                 _serial.DataBits = 8;
@@ -152,11 +151,10 @@ public class MainWindowViewModel : ViewModelBase
 
     private void Receive(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
     {
-        var date = DateTime.Now.ToString("HH:mm:ss");
         string message = _serial.ReadLine().Trim('\r', '\n');
         if (message.Length == 32)
         {
-            SerialData += $"<== Rx<{date}> ~ {message}\n";
+            SerialData += $"<== Rx<{DateTime.Now.ToString("HH:mm:ss.ffff")}> ~ {message}\n";
         }
     }
 

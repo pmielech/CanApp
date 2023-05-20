@@ -1,6 +1,6 @@
 ../Drivers/CMSIS/Include/core_cm4.h:1939:34:__NVIC_SystemReset	4	static,ignoring_inline_asm
-../Core/Src/main.c:117:9:usHeartbeat_message	8	static
-../Core/Src/main.c:133:9:usBuildAdc_message	8	static
+../Core/Src/main.c:117:9:usBuildAdc_message	8	static
+../Core/Src/main.c:133:9:usHeartbeat_message	8	static
 ../Core/Src/main.c:139:9:usGetTemperatureValue	16	static
 ../Core/Src/main.c:145:9:usGetRefVoltValue	16	static
 ../Core/Src/main.c:150:6:HAL_TIM_PeriodElapsedCallback	16	static

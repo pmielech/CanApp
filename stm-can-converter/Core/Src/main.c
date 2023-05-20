@@ -24,6 +24,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -36,7 +37,20 @@
 
 #define UART_RX_BUFFER 20
 //#define UART_RX_BUFFER 20
+#define MSG_BUFFER_SIZE 8
+typedef enum{
+	SPEED_125_KBITS,
+	SPEED_250_KBITS,
+	SPEED_500_KBITS,
+	SPEED_1000_KBITS
 
+}can_speed_t;
+
+typedef enum{
+	RESET_SYSTEM,
+	SET_CAN_SPEED
+
+}master_command_t;
 
 /* USER CODE END PD */
 
@@ -61,23 +75,24 @@ uint32_t TxMailbox;
 
 uint16_t uartToCanMsg_ID = 0;
 uint8_t uartToCanMsg_DLC = 0;
-uint8_t uartToCanMsg_Data[8] = {0};
+uint8_t uartToCanMsg_Data[MSG_BUFFER_SIZE] = {0};
 
 uint16_t canToUartMsg_ID = 0;
 uint8_t canToUartMsg_DLC = 0;
-uint8_t canToUartMsg_Data[8] = {0};
+uint8_t canToUartMsg_Data[MSG_BUFFER_SIZE] = {0};
 
-uint8_t TxData[8];
-uint8_t RxData[8];
+uint8_t TxData[MSG_BUFFER_SIZE];
 uint8_t uartMessageState = 0u;
+uint8_t RxData[MSG_BUFFER_SIZE];
 uint8_t led_state = 0;
 uint8_t can_status = 0;
 uint8_t uart_status = 0;
-uint8_t button_msg[8] = {0};
+uint8_t button_msg[MSG_BUFFER_SIZE] = {0};
 
 uint8_t UartRxBuffer[UART_RX_BUFFER] = {0};
 uint8_t ReceiveBuf[UART_RX_BUFFER];
 uint8_t OperationalBuf[UART_RX_BUFFER];
+uint8_t canSpeedOnStartup __attribute__ ((section (".no_init")));;
 
 
 /* USER CODE END PV */
@@ -95,18 +110,46 @@ static void MX_USART2_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-
 int __io_putchar(int ch)
 {
     HAL_UART_Transmit(&huart2, (uint8_t*)&ch, 1, HAL_MAX_DELAY);
     return 1;
 }
 
+void vMasterCommand(uint8_t cmd, uint8_t value){
+
+
+	switch (cmd) {
+		case RESET_SYSTEM:
+			NVIC_SystemReset();
+			break;
+		case SET_CAN_SPEED:
+			if(value >= 0 && value <= 3)
+				canSpeedOnStartup = value;
+			break;
+		default:
+			break;
+	}
+
+}
+
 void vConvertToCan(uint16_t *size){
 	uint8_t buildID[4] = {0};
+	uint8_t masterComand = 0;
 	for(int j=0; j < 4; j++){
 		buildID[j] = OperationalBuf[j];
-	} sscanf(buildID, "%04x", &uartToCanMsg_ID);
+		if (buildID[j] == 'F'){
+			masterComand++;
+		}
+		if(masterComand == 2 && j == 3){
+			vMasterCommand(buildID[2]-'0', buildID[3]-'0');
+		}
+
+	}
+
+	if(masterComand == 0){
+
+	sscanf(buildID, "%04x", &uartToCanMsg_ID);
 	for(int i=0; i < ((uint)size-6)/4; i++){
 			if(i == 0){
 				uint8_t buildDLC[2] = {0};
@@ -134,6 +177,8 @@ void vConvertToCan(uint16_t *size){
 	TxHeader.TransmitGlobalTime = DISABLE;
 	memset(OperationalBuf, 0, UART_RX_BUFFER);
 	can_status += HAL_CAN_AddTxMessage(&hcan, &TxHeader, uartToCanMsg_Data, &TxMailbox);
+
+	}
 
 }
 
@@ -195,7 +240,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 				canToUartMsg_Data[i] = RxData[i];
 			}
 		} else{
-			memset(canToUartMsg_Data, 0, 8);
+			memset(canToUartMsg_Data, 0, MSG_BUFFER_SIZE);
 		}
 		vPrint_message();
 
@@ -234,6 +279,50 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	}
 
 }
+void setCanSpeed(can_speed_t canSpeed){
+
+	hcan.Instance = CAN;
+	switch(canSpeed){
+
+	case SPEED_125_KBITS:
+		hcan.Init.Prescaler = 72;
+		break;
+
+	case SPEED_250_KBITS:
+		hcan.Init.Prescaler = 36;
+		break;
+
+	case SPEED_500_KBITS:
+		hcan.Init.Prescaler = 18;
+		break;
+
+	case SPEED_1000_KBITS:
+		hcan.Init.Prescaler = 9;
+		break;
+
+	default:
+		hcan.Init.Prescaler = 18;
+		canSpeedOnStartup = 2;
+		break;
+
+	}
+
+	hcan.Init.Mode = CAN_MODE_NORMAL;
+	hcan.Init.SyncJumpWidth = CAN_SJW_1TQ;
+	hcan.Init.TimeSeg1 = CAN_BS1_2TQ;
+	hcan.Init.TimeSeg2 = CAN_BS2_1TQ;
+	hcan.Init.TimeTriggeredMode = DISABLE;
+	hcan.Init.AutoBusOff = DISABLE;
+	hcan.Init.AutoWakeUp = DISABLE;
+	hcan.Init.AutoRetransmission = DISABLE;
+	hcan.Init.ReceiveFifoLocked = DISABLE;
+	hcan.Init.TransmitFifoPriority = DISABLE;
+	if (HAL_CAN_Init(&hcan) != HAL_OK)
+	{
+		Error_Handler();
+	}
+}
+
 
 /* USER CODE END 0 */
 
@@ -347,12 +436,14 @@ static void MX_CAN_Init(void)
 {
 
   /* USER CODE BEGIN CAN_Init 0 */
+	setCanSpeed(canSpeedOnStartup);
 
   /* USER CODE END CAN_Init 0 */
 
   /* USER CODE BEGIN CAN_Init 1 */
 
   /* USER CODE END CAN_Init 1 */
+	/*
   hcan.Instance = CAN;
   hcan.Init.Prescaler = 18;
   hcan.Init.Mode = CAN_MODE_NORMAL;
@@ -369,6 +460,7 @@ static void MX_CAN_Init(void)
   {
     Error_Handler();
   }
+  */
   /* USER CODE BEGIN CAN_Init 2 */
 
   CAN_FilterTypeDef can_filter_config;
@@ -408,7 +500,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 9600;
+  huart2.Init.BaudRate = 115200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;

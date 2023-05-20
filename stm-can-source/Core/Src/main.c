@@ -44,10 +44,10 @@
 #define INTERNAL_VOLT   1.21f
 
 typedef enum{
-	speed_125_KBITS,
-	speed_250_KBITS,
-	speed_500_KBITS,
-	speed_1000_KBITS
+  SPEED_125_KBITS,
+  SPEED_250_KBITS,
+  SPEED_500_KBITS,
+  SPEED_1000_KBITS
 
 }can_speed_t;
 
@@ -114,7 +114,7 @@ static void MX_ADC2_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-uint8_t usHeartbeat_message(){
+uint8_t usBuildAdc_message(){
 
 	memcpy(opAdcData, adcData, ADC_BUF_LEN);
 	TxData[0] = (opAdcData[0] >> 0) & 0xFF;
@@ -130,7 +130,7 @@ uint8_t usHeartbeat_message(){
 
 }
 
-uint8_t usBuildAdc_message(){
+uint8_t usHeartbeat_message(){
 
 
 	return HAL_CAN_AddTxMessage(&hcan, &heartbeat_msgTxHeader, heartbeat, &TxMailbox);
@@ -268,19 +268,19 @@ void setCanSpeed(can_speed_t canSpeed){
 	hcan.Instance = CAN;
 	switch(canSpeed){
 
-	case speed_125_KBITS:
+	case SPEED_125_KBITS:
 		hcan.Init.Prescaler = 72;
 		break;
 
-	case speed_250_KBITS:
+	case SPEED_250_KBITS:
 		hcan.Init.Prescaler = 36;
 		break;
 
-	case speed_500_KBITS:
+	case SPEED_500_KBITS:
 		hcan.Init.Prescaler = 18;
 		break;
 
-	case speed_1000_KBITS:
+	case SPEED_1000_KBITS:
 		hcan.Init.Prescaler = 9;
 		break;
 

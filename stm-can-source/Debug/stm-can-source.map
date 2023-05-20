@@ -3501,12 +3501,12 @@ LOAD /Applications/STM32CubeIDE.app/Contents/Eclipse/plugins/com.st.stm32cube.id
  *(.text*)
  .text.__NVIC_SystemReset
                 0x0000000008000bb8       0x2c ./Core/Src/main.o
- .text.usHeartbeat_message
-                0x0000000008000be4       0x7c ./Core/Src/main.o
-                0x0000000008000be4                usHeartbeat_message
  .text.usBuildAdc_message
+                0x0000000008000be4       0x7c ./Core/Src/main.o
+                0x0000000008000be4                usBuildAdc_message
+ .text.usHeartbeat_message
                 0x0000000008000c60       0x28 ./Core/Src/main.o
-                0x0000000008000c60                usBuildAdc_message
+                0x0000000008000c60                usHeartbeat_message
  .text.usGetTemperatureValue
                 0x0000000008000c88       0x70 ./Core/Src/main.o
                 0x0000000008000c88                usGetTemperatureValue

@@ -43,7 +43,7 @@
 </Window.Styles>
     
     
-    <Grid  Margin="5">
+    <Grid  Margin="4">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
@@ -83,7 +83,7 @@
                     </Grid.ColumnDefinitions>
                     
                     <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Text="COM~Port" VerticalAlignment="Top" HorizontalAlignment="Stretch"></TextBlock>
-                    <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Port"></Label>
+                    <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Port"></Label>
                     
                     <ComboBox Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="3"  Items="{Binding ComList.Items}" SelectedIndex="{Binding SelectedCom}" VerticalAlignment="Center" HorizontalAlignment="Stretch">
                         <ComboBox.ItemTemplate>
@@ -92,12 +92,22 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <Button Grid.Row="2" Grid.Column="3" Grid.ColumnSpan="3" Command="{Binding RefreshComPortsCommand}" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
-                        <TextBlock HorizontalAlignment="Center" Text="Refresh List"></TextBlock>
+                    <Button Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="3" Width="30" Command="{Binding RefreshComPortsCommand}" VerticalAlignment="Center" HorizontalAlignment="Left">
+                        <TextBlock HorizontalAlignment="Center" Text="Ref"></TextBlock>
                     </Button>
-                    <Ellipse Grid.Row="3" Grid.Column="2"  Width="20" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Center"  Fill="{Binding StatusColor}"></Ellipse>
-                    <Button Grid.Row="3" Grid.Column="3" Grid.ColumnSpan="3" Command="{Binding ConnectToComCommand }" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
+                    <Ellipse Grid.Row="2" Grid.Column="2"  Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center"  Fill="{Binding StatusColor}"></Ellipse>
+                    <Button Grid.Row="2" Grid.Column="3" Grid.ColumnSpan="3" Command="{Binding ConnectToComCommand }" VerticalAlignment="Center" HorizontalAlignment="Stretch">
                         <TextBlock HorizontalAlignment="Center" Text="{Binding ConnectionButton}"></TextBlock>
+                    </Button>
+                    <Label Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" VerticalAlignment="Bottom" HorizontalAlignment="Center" Content="CAN params"></Label>
+                    <ComboBox Grid.Row="4" Grid.Column="3" Grid.ColumnSpan="3" SelectedIndex="{Binding SelectedSpeed}" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                        <ComboBoxItem>125  kbit/s</ComboBoxItem>
+                        <ComboBoxItem>250  kbit/s</ComboBoxItem>
+                        <ComboBoxItem>500  kbit/s</ComboBoxItem>
+                        <ComboBoxItem>1000 kbit/s</ComboBoxItem>
+                    </ComboBox>
+                    <Button Grid.Row="5" Grid.Column="3" Grid.ColumnSpan="3" Command="{Binding ConnectToComCommand }" VerticalAlignment="Top" HorizontalAlignment="Stretch">
+                        <TextBlock HorizontalAlignment="Center" Text="Send command"></TextBlock>
                     </Button>
                     
                 </Grid>
