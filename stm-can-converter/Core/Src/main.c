@@ -24,6 +24,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 /* USER CODE END Includes */
 
@@ -34,7 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define COMMAND_BUFFER 4
 #define UART_RX_BUFFER 20
 //#define UART_RX_BUFFER 20
 #define MSG_BUFFER_SIZE 8
@@ -64,6 +65,7 @@ CAN_HandleTypeDef hcan;
 
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_rx;
+DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
 
@@ -78,20 +80,19 @@ uint8_t uartToCanMsg_DLC = 0;
 uint8_t uartToCanMsg_Data[MSG_BUFFER_SIZE] = {0};
 
 uint16_t canToUartMsg_ID = 0;
-uint8_t canToUartMsg_DLC = 0;
 uint8_t canToUartMsg_Data[MSG_BUFFER_SIZE] = {0};
 
 uint8_t TxData[MSG_BUFFER_SIZE];
 uint8_t uartMessageState = 0u;
 uint8_t RxData[MSG_BUFFER_SIZE];
 uint8_t led_state = 0;
-uint8_t can_status = 0;
-uint8_t uart_status = 0;
 uint8_t button_msg[MSG_BUFFER_SIZE] = {0};
+uint8_t can_status = 0;
 
+volatile uint8_t canToUartMsg_DLC = 0;
 uint8_t UartRxBuffer[UART_RX_BUFFER] = {0};
 uint8_t ReceiveBuf[UART_RX_BUFFER];
-uint8_t OperationalBuf[UART_RX_BUFFER];
+volatile uint8_t OperationalBuf[UART_RX_BUFFER];
 uint8_t canSpeedOnStartup __attribute__ ((section (".no_init")));;
 
 
@@ -116,58 +117,64 @@ int __io_putchar(int ch)
     return 1;
 }
 
-void vMasterCommand(uint8_t cmd, uint8_t value){
+void vPrint_message(){
+	printf("%04x ", canToUartMsg_ID);
+	printf("%02x ", canToUartMsg_DLC);
+	for(int i = 0; i < canToUartMsg_DLC; i++)
+		{
+					printf("%02x ", canToUartMsg_Data[i]);
+		} printf("\n\r");
+	}
 
+
+void vMasterCommand(uint8_t cmd, uint8_t value){
 
 	switch (cmd) {
 		case RESET_SYSTEM:
 			NVIC_SystemReset();
 			break;
 		case SET_CAN_SPEED:
-			if(value >= 0 && value <= 3)
+			if(value >= 0 && value <= 3){
 				canSpeedOnStartup = value;
+
+			}
 			break;
 		default:
 			break;
 	}
 
+	canToUartMsg_ID = value;
+	canToUartMsg_DLC = 0;
+	vPrint_message();
+
 }
 
 void vConvertToCan(uint16_t *size){
 	uint8_t buildID[4] = {0};
-	uint8_t masterComand = 0;
 	for(int j=0; j < 4; j++){
 		buildID[j] = OperationalBuf[j];
-		if (buildID[j] == 'F'){
-			masterComand++;
-		}
-		if(masterComand == 2 && j == 3){
-			vMasterCommand(buildID[2]-'0', buildID[3]-'0');
-		}
 
 	}
 
-	if(masterComand == 0){
-
-	sscanf(buildID, "%04x", &uartToCanMsg_ID);
+	sscanf((const char*)&buildID, "%04x", (uint *)&uartToCanMsg_ID);
 	for(int i=0; i < ((uint)size-6)/4; i++){
 			if(i == 0){
 				uint8_t buildDLC[2] = {0};
 				for(int j=0; j < 2; j++){
 					buildDLC[j] = OperationalBuf[j+5];
 					}
-				sscanf(buildDLC, "%02x", &uartToCanMsg_DLC);
+				sscanf((const char*)&buildDLC, "%02x", (uint *)&uartToCanMsg_DLC);
 			} else if(i >= 1){
 
 				for(int j=0; j < uartToCanMsg_DLC; j++){
 					uint8_t buildByte[2] = {0};
 					for(int c=0; c < 2; c++){
 						buildByte[j+c] = OperationalBuf[c+8];
-					} sscanf(buildByte, "%02x", &uartToCanMsg_Data[j]);
+					} sscanf((const char*)&buildByte, "%02x", (uint *)&uartToCanMsg_Data[j]);
 					}
 				break;
 			}
-	}
+
 
 	TxHeader.DLC = uartToCanMsg_DLC;
 	TxHeader.ExtId = 0;
@@ -175,7 +182,6 @@ void vConvertToCan(uint16_t *size){
 	TxHeader.RTR = CAN_RTR_DATA;
 	TxHeader.StdId = uartToCanMsg_ID;
 	TxHeader.TransmitGlobalTime = DISABLE;
-	memset(OperationalBuf, 0, UART_RX_BUFFER);
 	can_status += HAL_CAN_AddTxMessage(&hcan, &TxHeader, uartToCanMsg_Data, &TxMailbox);
 
 	}
@@ -188,26 +194,62 @@ void resetUartDmaRxBuffer(UART_HandleTypeDef  *huart, uint16_t Size) {
     __HAL_DMA_ENABLE(huart->hdmarx);
 }
 
-
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
+	volatile static uint8_t uartMessageReceived;
+	volatile static uint8_t callbackHandler = 0;
+	//volatile static uint8_t arrIterator = 0;
 
-	static uint8_t callbackHandler = 0;
 
-	if(huart->Instance == USART2 && strlen(UartRxBuffer) > 10 && strstr(UartRxBuffer, '\n')){
-		callbackHandler = 0;
-		memcpy(OperationalBuf, UartRxBuffer, UART_RX_BUFFER);
-		memset(UartRxBuffer, 0, UART_RX_BUFFER);
-		vConvertToCan(&Size);
-		resetUartDmaRxBuffer(&huart2, UART_RX_BUFFER);
+	if(huart->Instance == USART2 ){
 
-		HAL_UARTEx_ReceiveToIdle_DMA(&huart2, UartRxBuffer, UART_RX_BUFFER);
-		__HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
+		//abs(UART_RX_BUFFER - (int)huart->hdmarx->Instance->CNDTR);
 
-	} else {
-		callbackHandler++;
+
+		if(strlen((const char*)&UartRxBuffer) > 10 && strstr((const char *)&UartRxBuffer, (const char*)'\n')){
+			for(int arrIterator = 0; arrIterator < UART_RX_BUFFER; arrIterator++){
+						OperationalBuf[arrIterator] = (const char)UartRxBuffer[arrIterator];
+
+					}
+			vConvertToCan(&Size);
+			uartMessageReceived = 1u;
+
+		}else if(strlen((const char*)&UartRxBuffer) >= 4 && strstr((const char*)&UartRxBuffer, "FF")){
+			for(int arrIterator = 0; arrIterator < UART_RX_BUFFER; arrIterator++){
+						OperationalBuf[arrIterator] = (const char)UartRxBuffer[arrIterator];
+
+					}
+			vMasterCommand(OperationalBuf[2]-'0', OperationalBuf[3]-'0');
+			uartMessageReceived = 1u;
+
+		}
+		else {
+			callbackHandler++;
+
+		}
+
+		if(uartMessageReceived){
+			callbackHandler = 0;
+			memset(UartRxBuffer, 0, UART_RX_BUFFER);
+			//arrIterator = 0;
+			uartMessageReceived = 0u;
+
+			resetUartDmaRxBuffer(&huart2, UART_RX_BUFFER);
+			HAL_UARTEx_ReceiveToIdle_DMA(&huart2, UartRxBuffer, UART_RX_BUFFER);
+			__HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
+
+
+			for(int arrIterator = 0; arrIterator < UART_RX_BUFFER; arrIterator++){
+				OperationalBuf[arrIterator] = 0;
+
+			}
+			//arrIterator = 0;
+
+		}
+
 	}
 
 	if(callbackHandler > 3){
+		//arrIterator = 0u;
 		memset(UartRxBuffer, 0, UART_RX_BUFFER);
 		resetUartDmaRxBuffer(&huart2, UART_RX_BUFFER);
 		HAL_UARTEx_ReceiveToIdle_DMA(&huart2, UartRxBuffer, UART_RX_BUFFER);
@@ -215,16 +257,6 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 	}
 }
 
-uint8_t bytesSplitter = 0;
-
-void vPrint_message(){
-	printf("%04x ", canToUartMsg_ID);
-	printf("%02x ", canToUartMsg_DLC);
-	for(int i = 0; i < sizeof(canToUartMsg_Data); i++)
-		{
-					printf("%02x ", canToUartMsg_Data[i]);
-		} printf("\n\r");
-	}
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
@@ -234,15 +266,12 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		canToUartMsg_ID = RxHeader.StdId;
 		canToUartMsg_DLC= RxHeader.DLC;
 
+		memset(canToUartMsg_Data, 0, MSG_BUFFER_SIZE);
 		if (canToUartMsg_DLC != 0) {
-			int i;
-			for(i=0; i < sizeof(canToUartMsg_Data); i++){
-				canToUartMsg_Data[i] = RxData[i];
-			}
-		} else{
-			memset(canToUartMsg_Data, 0, MSG_BUFFER_SIZE);
+			memcpy(canToUartMsg_Data, RxData, canToUartMsg_DLC);
 		}
-		vPrint_message();
+	    vPrint_message();
+
 
 	}
 }
@@ -252,6 +281,8 @@ void vCan_messages_init(){
 	Button_TxHeader.DLC = 0x01;
 	Button_TxHeader.ExtId = 0;
 	Button_TxHeader.IDE = CAN_ID_STD;
+
+
 	Button_TxHeader.RTR = CAN_RTR_DATA;
 	Button_TxHeader.StdId = 0x350;
 	Button_TxHeader.TransmitGlobalTime = DISABLE;
@@ -365,7 +396,10 @@ int main(void)
 	HAL_UARTEx_ReceiveToIdle_DMA(&huart2, UartRxBuffer, UART_RX_BUFFER);
 	__HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
 
+	HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(USART2_IRQn);
 
+	//HAL_UART_Receive_IT(&huart2, UartRxBuffer, UART_RX_BUFFER);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -532,6 +566,9 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel6_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
+  /* DMA1_Channel7_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
 
 }
 

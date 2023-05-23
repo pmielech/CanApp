@@ -157,7 +157,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		  can_status += usHeartbeat_message();
 	  }
 
-	  if(timerHandler == 4 ){
+	  if(timerHandler == 3 ){
 		  timerHandler = 0;
 	  } else{
 		  timerHandler++;

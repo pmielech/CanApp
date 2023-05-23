@@ -1204,10 +1204,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
  8000d98:	701a      	strb	r2, [r3, #0]
 	  }
 
-	  if(timerHandler == 4 ){
+	  if(timerHandler == 3 ){
  8000d9a:	4b0c      	ldr	r3, [pc, #48]	; (8000dcc <HAL_TIM_PeriodElapsedCallback+0x80>)
  8000d9c:	781b      	ldrb	r3, [r3, #0]
- 8000d9e:	2b04      	cmp	r3, #4
+ 8000d9e:	2b03      	cmp	r3, #3
  8000da0:	d103      	bne.n	8000daa <HAL_TIM_PeriodElapsedCallback+0x5e>
 		  timerHandler = 0;
  8000da2:	4b0a      	ldr	r3, [pc, #40]	; (8000dcc <HAL_TIM_PeriodElapsedCallback+0x80>)

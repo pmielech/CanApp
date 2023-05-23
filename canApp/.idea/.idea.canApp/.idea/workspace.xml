@@ -10,19 +10,21 @@
     <list default="true" id="91771189-1256-4bcc-a05c-5dd2044336f5" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.canApp/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.canApp/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/ViewModels/MainWindowViewModel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/ViewModels/MainWindowViewModel.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canApp/ViewModels/ViewModelBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/ViewModels/ViewModelBase.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canApp/Views/MainWindow.axaml" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/Views/MainWindow.axaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/bin/Debug/net7.0/canApp.dll" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/bin/Debug/net7.0/canApp.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/bin/Debug/net7.0/canApp.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/bin/Debug/net7.0/canApp.pdb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/original.dll" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/original.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/original.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/original.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/resources" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/resources" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/canApp.dll" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/canApp.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/canApp.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/canApp.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/ref/canApp.dll" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/ref/canApp.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/refint/canApp.dll" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/refint/canApp.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../stm-can-converter/Core/Inc/stm32f3xx_it.h" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-converter/Core/Inc/stm32f3xx_it.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../stm-can-converter/Core/Src/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-converter/Core/Src/main.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../stm-can-converter/Core/Src/stm32f3xx_hal_msp.c" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-converter/Core/Src/stm32f3xx_hal_msp.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../stm-can-converter/Core/Src/stm32f3xx_it.c" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-converter/Core/Src/stm32f3xx_it.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../stm-can-converter/stm-can-converter.ioc" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-converter/stm-can-converter.ioc" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../stm-can-source/Core/Src/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Core/Src/main.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../stm-can-source/Debug/Core/Src/main.o" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Debug/Core/Src/main.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../stm-can-source/Debug/stm-can-source.elf" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Debug/stm-can-source.elf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../stm-can-source/Debug/stm-can-source.list" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Debug/stm-can-source.list" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,6 +40,7 @@
     </option>
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/308b3f9d78e5d85dd7642bd35bea39c2b1bc805212ce6fe93e79ca948b72a5/Encoding.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/9e48c385a0f8c4d27705158a41832ed686216b07b40ba171e89b41411bcc4dc/RxApp.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/a3c6488c4b7bbbe69cfda43629ff542fa638a712e4b18b6123e8c3a882ed7a/Layoutable.cs" root0="SKIP_HIGHLIGHTING" />
@@ -120,6 +123,9 @@
       <workItem from="1684240725544" duration="624000" />
       <workItem from="1684263994192" duration="1543000" />
       <workItem from="1684605723161" duration="6026000" />
+      <workItem from="1684697363518" duration="1191000" />
+      <workItem from="1684779239851" duration="3964000" />
+      <workItem from="1684823277577" duration="2356000" />
     </task>
     <servers />
   </component>
@@ -143,6 +149,28 @@
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
   </component>
   <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/canApp/ViewModels/MainWindowViewModel.cs</url>
+          <line>73</line>
+          <properties documentPath="$PROJECT_DIR$/canApp/ViewModels/MainWindowViewModel.cs" initialLine="72" containingFunctionPresentation="lambda expression inside constructor 'MainWindowViewModel'">
+            <startOffsets>
+              <option value="2416" />
+            </startOffsets>
+            <endOffsets>
+              <option value="2461" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <pin-to-top-manager>
+      <pinned-members>
+        <PinnedItemInfo parentTag="Frame#canApp.ViewModels.MainWindowViewModel.&lt;.ctor&gt;b__16_1" memberName="this" />
+      </pinned-members>
+    </pin-to-top-manager>
     <watches-manager>
       <configuration name="DotNetProject">
         <watch expression="ComList" language="C#" />
@@ -150,6 +178,7 @@
         <watch expression="_serial.ReadExisting()" language="C#" />
         <watch expression="_serial.ReadLine()" language="C#" />
         <watch expression="hexstring" language="C#" />
+        <watch expression="SerialData" language="C#" />
       </configuration>
     </watches-manager>
   </component>

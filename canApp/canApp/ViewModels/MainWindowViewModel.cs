@@ -69,12 +69,13 @@ public class MainWindowViewModel : ViewModelBase
                         _serial.Write(_hexValue, 0, 1);
                         Thread.Sleep(1);
                     }
-                    
-                    SerialData += $"==> TX<{DateTime.Now.ToString("HH:mm:ss.ffff")}> ~ {UserInput}";
+
+                    var dat = DateTime.Now.ToString("HH:mm:ss.ffff");
+                    SerialData += $"==> TX<{dat}> ~ {UserInput}";
                     UserInput = "";
 
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     SerialData += "~~~Failed to send data!~~~\n";
 
@@ -152,9 +153,10 @@ public class MainWindowViewModel : ViewModelBase
     private void Receive(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
     {
         string message = _serial.ReadLine().Trim('\r', '\n');
-        if (message.Length == 32)
+        if (message.Length >= 6 && message.Length <= 32)
         {
-            SerialData += $"<== Rx<{DateTime.Now.ToString("HH:mm:ss.ffff")}> ~ {message}\n";
+            var dat = DateTime.Now.ToString("HH:mm:ss.ffff");
+            SerialData += $"<== Rx<{dat}> ~ {message}\n";
         }
     }
 
