@@ -152,12 +152,21 @@ public class MainWindowViewModel : ViewModelBase
 
     private void Receive(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
     {
-        string message = _serial.ReadLine().Trim('\r', '\n');
-        if (message.Length >= 6 && message.Length <= 32)
+        try
         {
-            var dat = DateTime.Now.ToString("HH:mm:ss.ffff");
-            SerialData += $"<== Rx<{dat}> ~ {message}\n";
+            var date = DateTime.Now.ToString("HH:mm:ss.ffff");
+            string message = _serial.ReadLine().Trim('\r', '\n');
+            if (message.Length == 32)
+            {
+                SerialData += $"<== Rx<{date}> ~ {message}\n";
+            }
+            
         }
+        catch (Exception exception)
+        {
+            Console.WriteLine(exception);
+        }
+        
     }
 
 }
