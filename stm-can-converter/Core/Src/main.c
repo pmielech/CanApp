@@ -36,6 +36,7 @@
 
 #define UART_RX_BUFFER 20
 #define MSG_BUFFER_SIZE 8
+#define HALF_MSG_BUFFER 4
 typedef enum{
     SPEED_125_KBITS,
     SPEED_250_KBITS,
@@ -120,13 +121,13 @@ void vPrint_message(){
 	printf("%02x ", canToUartMsg_DLC);
 	for(int i = 0; i < sizeof(canToUartMsg_Data); i++)
 		{
-					printf("%02x ", canToUartMsg_Data[i]);
+			printf("%02x ", canToUartMsg_Data[i]);
 		} printf("\n\r");
 	}
 
 void vConvertToCan(uint16_t *size){
-	uint8_t buildID[4] = {0};
-	for(int j=0; j < 4; j++){
+	uint8_t buildID[HALF_MSG_BUFFER] = {0};
+	for(int j=0; j < HALF_MSG_BUFFER; j++){
 		buildID[j] = OperationalBuf[j];
 	} sscanf(buildID, "%04x", &uartToCanMsg_ID);
 	for(uint8_t i=0u; i < ((uint)size-6)/4; i++){
@@ -195,50 +196,63 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 	static uint8_t callbackHandler = 0;
 
 	/*
+	static uint8_t messageReceived = 0;
+
 	if(huart->Instance == USART2){
 
-		if(strstr(UartRxBuffer, '\n')){
+		if(strstr((const char *)UartRxBuffer, (const char *)'\n')){
 
-			if(strlen(UartRxBuffer) > 10){
-					callbackHandler = 0;
+			if(strlen((const char *)UartRxBuffer) > 10){
 					memcpy(OperationalBuf, UartRxBuffer, UART_RX_BUFFER);
 					memset(UartRxBuffer, 0, UART_RX_BUFFER);
 					vConvertToCan(&Size);
+					messageReceived = 1;
 
-
-
-				} else if(strlen(UartRxBuffer) >= 4 && strstr(UartRxBuffer, 'F')){
-					callbackHandler = 0;
+				} else if(strlen((const char *)UartRxBuffer) >= 4 && strstr((const char *)UartRxBuffer, (const char *)'F')){
 					memcpy(OperationalBuf, UartRxBuffer, UART_RX_BUFFER);
 					memset(UartRxBuffer, 0, UART_RX_BUFFER);
-					vMasterCommand(OperationalBuf[2] - '0', OperationalBuf[3]-'0');
+					uint8_t master_counter = 0;
+					for(uint8_t i = 0u; i < HALF_MSG_BUFFER; i++){
+						if(OperationalBuf[i] == 'F'){
+							master_counter++;
+						}
+					}
+					if(master_counter == 2){
+						vMasterCommand(OperationalBuf[2] - '0', OperationalBuf[3]-'0');
+						messageReceived = 1;
 
 					}
-					resetUartDmaRxBuffer(&huart2, UART_RX_BUFFER);
-					HAL_UARTEx_ReceiveToIdle_DMA(&huart2, UartRxBuffer, UART_RX_BUFFER);
-					__HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
+
+					}
 
 				} else{
 					callbackHandler++;
 
 				}
 
-
-
 		} else{
 
 		callbackHandler++;
 		}
 
-		if(callbackHandler > 3){
+		if(messageReceived){
+			callbackHandler = 0;
+			resetUartDmaRxBuffer(&huart2, UART_RX_BUFFER);
+			HAL_UARTEx_ReceiveToIdle_DMA(&huart2, UartRxBuffer, UART_RX_BUFFER);
+			__HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
+			messageReceived = 0;
+
+		}
+
+		if(callbackHandler > UART_RX_BUFFER -1){
 			memset(UartRxBuffer, 0, UART_RX_BUFFER);
 			resetUartDmaRxBuffer(&huart2, UART_RX_BUFFER);
 			HAL_UARTEx_ReceiveToIdle_DMA(&huart2, UartRxBuffer, UART_RX_BUFFER);
 			__HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
 		}
+
 */
 
-	//HAL_Delay(1);
 	if(huart->Instance == USART2 && strlen(UartRxBuffer) > 10 && strstr(UartRxBuffer, "\n\0")){
 		callbackHandler = 0;
 		memcpy(OperationalBuf, UartRxBuffer, UART_RX_BUFFER);
@@ -272,7 +286,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 		callbackHandler++;
 	}
 
-	if(callbackHandler > 19){
+	if(callbackHandler > UART_RX_BUFFER-1){
 		memset(OperationalBuf, 0, UART_RX_BUFFER);
 		memset(UartRxBuffer, 0, UART_RX_BUFFER);
 		resetUartDmaRxBuffer(&huart2, UART_RX_BUFFER);
@@ -282,9 +296,6 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 
 
 }
-
-uint8_t bytesSplitter = 0;
-
 
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)

@@ -8,8 +8,7 @@
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="canApp"
-        TransparencyLevelHint="AcrylicBlur"
-        Background="Transparent"
+        Background="#393646"
         >
 
     <Design.DataContext>
@@ -39,52 +38,14 @@
     </Style>
     
     
-    
 </Window.Styles>
-    
-    
-    <Grid  Margin="4">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"></ColumnDefinition>
-            <ColumnDefinition Width="*"></ColumnDefinition>
-            <ColumnDefinition Width="*"></ColumnDefinition>
-            <ColumnDefinition Width="*"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            
-        </Grid.RowDefinitions>
+    <Grid  Margin="4" ColumnDefinitions="*,*,*,*" RowDefinitions="*,*,*,*">
         <Grid ShowGridLines="False" Grid.Column="0" Grid.Row="0" Grid.RowSpan="4">
             <Border Grid.Column="0" Grid.Row="0"  CornerRadius="7" Padding="3" BorderThickness="1" BorderBrush="White">
-                <Grid ShowGridLines="False" Margin="3">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"></RowDefinition>
-                        <RowDefinition Height="*"></RowDefinition>
-                        <RowDefinition Height="*"></RowDefinition>
-                        <RowDefinition Height="*"></RowDefinition>
-                        <RowDefinition Height="*"></RowDefinition>
-                        <RowDefinition Height="*"></RowDefinition>
-                        <RowDefinition Height="*"></RowDefinition>
-                        <RowDefinition Height="*"></RowDefinition>
-                        <RowDefinition Height="*"></RowDefinition>
-                        <RowDefinition Height="*"></RowDefinition>
-
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
+                <Grid ShowGridLines="False" Margin="3" RowDefinitions="*,*,*,*,*,*,*,*,*,*" ColumnDefinitions="*,*,*,*,*,*">
                     
-                    <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Text="COM~Port" VerticalAlignment="Top" HorizontalAlignment="Stretch"></TextBlock>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Text="COM ←—→ CAN" VerticalAlignment="Top" HorizontalAlignment="Stretch"></TextBlock>
                     <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Port"></Label>
-                    
                     <ComboBox Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="3"  Items="{Binding ComList.Items}" SelectedIndex="{Binding SelectedCom}" VerticalAlignment="Center" HorizontalAlignment="Stretch">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
@@ -93,7 +54,9 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                     <Button Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="3" Width="30" Command="{Binding RefreshComPortsCommand}" VerticalAlignment="Center" HorizontalAlignment="Left">
-                        <TextBlock HorizontalAlignment="Center" Text="Ref"></TextBlock>
+                        <StackPanel>
+                            <Image Source="../Assets/refresh-page-option.png" ></Image>
+                        </StackPanel>
                     </Button>
                     <Ellipse Grid.Row="2" Grid.Column="2"  Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center"  Fill="{Binding StatusColor}"></Ellipse>
                     <Button Grid.Row="2" Grid.Column="3" Grid.ColumnSpan="3" Command="{Binding ConnectToComCommand }" VerticalAlignment="Center" HorizontalAlignment="Stretch">
@@ -139,7 +102,7 @@
                     
                     </Grid.RowDefinitions>
                     <Label Grid.Column="0" Grid.Row="0"  Content="Messages Control"></Label>
-                    <Border Grid.Column="0" Grid.Row="1" Grid.RowSpan="8" Grid.ColumnSpan="4" Background="#5A5A5A" CornerRadius="7" Margin="3" BorderThickness="1" BorderBrush="White" >
+                    <Border Grid.Column="0" Grid.Row="1" Grid.RowSpan="8" Grid.ColumnSpan="4" Background="#4F4557" CornerRadius="7" Margin="3" BorderThickness="1" BorderBrush="White" >
                        <ScrollViewer>
                            <TextBlock ScrollViewer.VerticalScrollBarVisibility="Visible"  Margin="5" Text="{Binding SerialData}" HorizontalAlignment="Left"></TextBlock>
                        </ScrollViewer>

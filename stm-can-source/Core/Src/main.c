@@ -203,7 +203,9 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		break;
 
 	case 0x500:
-		RxData[0] = usGetTemperatureValue();
+		if(RxData[0] == 0xFF){
+			RxData[0] = usGetTemperatureValue();
+		}
 		break;
 
 	case 0x550:
@@ -224,7 +226,15 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		break;
 
 	case 0x650:
-		RxData[0] = usGetRefVoltValue();
+		if(RxData[0] == 0xFF){
+			uint8_t voltageValue = usGetRefVoltValue();
+			RxData[0] = (voltageValue >> 0) & 0xFF;
+			if(voltageValue > 0xFF){
+				RxData[1] = (voltageValue >> 8) & 0xFF;
+				RxHeader.DLC = 0x02;
+			}
+
+		}
 		break;
 
 	default:
@@ -488,6 +498,7 @@ static void MX_ADC1_Init(void)
 
   /** Configure Regular Channel
   */
+  sConfig.Channel = ADC_CHANNEL_VREFINT;
   sConfig.Rank = ADC_REGULAR_RANK_2;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {

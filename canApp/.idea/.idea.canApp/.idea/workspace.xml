@@ -9,18 +9,24 @@
   <component name="ChangeListManager">
     <list default="true" id="91771189-1256-4bcc-a05c-5dd2044336f5" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.canApp/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.canApp/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canApp/ViewModels/MainWindowViewModel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/ViewModels/MainWindowViewModel.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canApp/Views/MainWindow.axaml" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/Views/MainWindow.axaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/bin/Debug/net7.0/canApp.dll" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/bin/Debug/net7.0/canApp.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/bin/Debug/net7.0/canApp.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/bin/Debug/net7.0/canApp.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/Resources.Inputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/Resources.Inputs.cache" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/original.dll" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/original.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/original.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/original.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/resources" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/Avalonia/resources" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/canApp.csproj.AssemblyReference.cache" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/canApp.csproj.AssemblyReference.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/canApp.csproj.FileListAbsolute.txt" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/canApp.csproj.FileListAbsolute.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/canApp.dll" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/canApp.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/canApp.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/canApp/obj/Debug/net7.0/canApp.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../stm-can-converter/Core/Inc/stm32f3xx_it.h" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-converter/Core/Inc/stm32f3xx_it.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../stm-can-converter/Core/Src/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-converter/Core/Src/main.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../stm-can-converter/Core/Src/stm32f3xx_hal_msp.c" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-converter/Core/Src/stm32f3xx_hal_msp.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../stm-can-converter/Core/Src/stm32f3xx_it.c" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-converter/Core/Src/stm32f3xx_it.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../stm-can-converter/stm-can-converter.ioc" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-converter/stm-can-converter.ioc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../stm-can-source/Core/Src/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Core/Src/main.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../stm-can-source/Debug/Core/Src/main.o" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Debug/Core/Src/main.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../stm-can-source/Debug/Core/Src/main.su" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Debug/Core/Src/main.su" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../stm-can-source/Debug/stm-can-source.elf" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Debug/stm-can-source.elf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../stm-can-source/Debug/stm-can-source.list" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Debug/stm-can-source.list" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../stm-can-source/Debug/stm-can-source.map" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/Debug/stm-can-source.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../stm-can-source/stm-can-source.ioc" beforeDir="false" afterPath="$PROJECT_DIR$/../stm-can-source/stm-can-source.ioc" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,7 +47,7 @@
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/a3c6488c4b7bbbe69cfda43629ff542fa638a712e4b18b6123e8c3a882ed7a/Layoutable.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/ad5967277fc4c8d2aaab3eaceeafafc078fc6a799b6a209633f13888f2b146c/TopLevel.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/bf9021a960b74107a7e141aa06bc9d8a0a53c929178c2fb95b1597be8af8dc/ExceptionDispatchInfo.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/d1b4ef4f84adf03b79eb1ac859431fcec0ac8a5dfee5a46db3f9613f56abadb/SerialPort.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/d1b4ef4f84adf03b79eb1ac859431fcec0ac8a5dfee5a46db3f9613f56abadb/SerialPort.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/ec9cbb41e7c431e6de747cc3eb514627fd64fb0a57fae8952b4a2d5573/System.IO.Ports.notsupported.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/f36724d2e12b56ff0d73dd63d47dd2212a2c78223d4a2b475d856c31ae8cd/ReactiveObject.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/f4e4bb5f4d567d61606dc94c5e882ff27d5f24868e79fbbe54dcc9531afaa92/SerialStream.Unix.cs" root0="SKIP_HIGHLIGHTING" />
@@ -123,6 +129,9 @@
       <workItem from="1684823277577" duration="2356000" />
       <workItem from="1684948729114" duration="2135000" />
       <workItem from="1684951007363" duration="1866000" />
+      <workItem from="1684997741810" duration="604000" />
+      <workItem from="1685003724668" duration="383000" />
+      <workItem from="1685220095944" duration="3629000" />
     </task>
     <servers />
   </component>
@@ -160,19 +169,6 @@
             </endOffsets>
           </properties>
           <option name="timeStamp" value="4" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/canApp/ViewModels/MainWindowViewModel.cs</url>
-          <line>156</line>
-          <properties documentPath="$PROJECT_DIR$/canApp/ViewModels/MainWindowViewModel.cs" initialLine="156" containingFunctionPresentation="method 'Receive'">
-            <startOffsets>
-              <option value="4912" />
-            </startOffsets>
-            <endOffsets>
-              <option value="4962" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="10" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
