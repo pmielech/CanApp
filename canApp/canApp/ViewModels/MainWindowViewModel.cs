@@ -99,7 +99,7 @@ public class MainWindowViewModel : ViewModelBase
                 {
                     WriteToSerial(UserInput);
                     var dat = DateTime.Now.ToString("HH:mm:ss.ffff");
-                    SerialData += $"==> TX<{dat}> ~ {UserInput}";
+                    SerialData += $"==> TX<{dat}> ~ {UserInput}\n";
                     UserInput = "";
                 }
                 catch (Exception)
