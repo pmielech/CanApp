@@ -21,5 +21,6 @@
   <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
     <PkgAvalonia Condition=" '$(PkgAvalonia)' == '' ">/Users/patryk/.nuget/packages/avalonia/0.10.18</PkgAvalonia>
     <PkgMicrosoft_CodeAnalysis_Analyzers Condition=" '$(PkgMicrosoft_CodeAnalysis_Analyzers)' == '' ">/Users/patryk/.nuget/packages/microsoft.codeanalysis.analyzers/2.9.6</PkgMicrosoft_CodeAnalysis_Analyzers>
+    <PkgMvvmLight Condition=" '$(PkgMvvmLight)' == '' ">/Users/patryk/.nuget/packages/mvvmlight/5.4.1.1</PkgMvvmLight>
   </PropertyGroup>
 </Project>

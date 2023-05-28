@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Text;
 using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 using ReactiveUI;
 
 
@@ -61,8 +65,11 @@ public class ViewModelBase : ReactiveObject
     public string SerialData
     {
         get => _serialData;
-        set => this.RaiseAndSetIfChanged(ref _serialData, value);
+        set { this.RaiseAndSetIfChanged(ref _serialData, value);
+        }
     }
+    
+    
 }
     
     

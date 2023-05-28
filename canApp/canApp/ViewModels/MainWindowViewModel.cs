@@ -1,12 +1,14 @@
 ﻿using System.IO.Ports;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows.Input;
 using Avalonia;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using canApp.Models;
 using ReactiveUI; 
@@ -19,17 +21,57 @@ public class MainWindowViewModel : ViewModelBase
     public ICommand RefreshComPortsCommand { get; }
     public ICommand ConnectToComCommand { get; }
     public ICommand SendUserMessage { get; }
-
+    public ICommand SendCanParams { get; }
+    public ICommand ResetRequest { get; }
     public ICommand ClearReceivedData { get; }
-
+    public ICommand ReadSpeed { get; }
     public ComViewModel ComList { get; }
-
     private readonly SerialPort _serial = new SerialPort();
 
     public MainWindowViewModel(DebugComList cp)
     {
         ComList = new ComViewModel(cp.GetItems());
 
+        SendCanParams = ReactiveCommand.Create(() =>
+        {
+            try
+            {
+                SendMasterCmd(1, SelectedSpeed);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
+        });
+        ResetRequest = ReactiveCommand.Create(() =>
+        {
+            try
+            {
+                SendMasterCmd(0, 0);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
+        });
+        ReadSpeed = ReactiveCommand.Create(() =>
+        {
+            try
+            {
+                SendMasterCmd(2, 0);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
+        });
+        
         RefreshComPortsCommand = ReactiveCommand.Create(() =>
         {
             string[] serialPortList = SerialPort.GetPortNames();
@@ -55,25 +97,10 @@ public class MainWindowViewModel : ViewModelBase
             {
                 try
                 {
-                    // Send the binary data out the port
-                    byte[] hexstring = Encoding.ASCII.GetBytes(UserInput += '\n');
-                    //There is a intermitant problem that I came across
-                    //If I write more than one byte in succesion without a 
-                    //delay the PIC i'm communicating with will Crash
-                    //I expect this id due to PC timing issues ad they are
-                    //not directley connected to the COM port the solution
-                    //Is a ver small 1 millisecound delay between chracters
-                    foreach (byte hexValue in hexstring)
-                    {
-                        byte[] _hexValue = new byte[] { hexValue }; // need to convert byte to byte[] to write
-                        _serial.Write(_hexValue, 0, 1);
-                        Thread.Sleep(1);
-                    }
-
+                    WriteToSerial(UserInput);
                     var dat = DateTime.Now.ToString("HH:mm:ss.ffff");
                     SerialData += $"==> TX<{dat}> ~ {UserInput}";
                     UserInput = "";
-
                 }
                 catch (Exception)
                 {
@@ -111,7 +138,7 @@ public class MainWindowViewModel : ViewModelBase
                     }
                     SerialData += "~~~Connected Successful!~~~\n";
                     Thread.Sleep(10);
-                    //_serial.ReadLine() += new System.IO.Ports.SerialDataReceivedEventHandler(Receive);
+                    SendMasterCmd(2, 0);
                     _serial.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(Receive);
                     ConnectionButton = "Disconnect";
 
@@ -143,11 +170,31 @@ public class MainWindowViewModel : ViewModelBase
                     Console.WriteLine(e);
                     throw;
                 }
-                
             }
-            
         });
 
+    }
+
+    private void WriteToSerial(string msg)
+    {
+        // Send the binary data out the port
+        byte[] hexstring = Encoding.ASCII.GetBytes(msg += '\n');
+        //There is a intermitant problem that I came across
+        //If I write more than one byte in succesion without a 
+        //delay the PIC i'm communicating with will Crash
+        //I expect this id due to PC timing issues ad they are
+        //not directley connected to the COM port the solution
+        //Is a ver small 1 millisecound delay between chracters
+        foreach (byte hexValue in hexstring)
+        {
+            byte[] _hexValue = new byte[] { hexValue }; // need to convert byte to byte[] to write
+            _serial.Write(_hexValue, 0, 1);
+            Thread.Sleep(1);
+        }
+    }
+    private void SendMasterCmd(int cmd, int value)
+    {
+        WriteToSerial("FF" + cmd.ToString() + value.ToString());
     }
 
     private void Receive(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
@@ -158,6 +205,19 @@ public class MainWindowViewModel : ViewModelBase
             string message = _serial.ReadLine().Trim('\r', '\n');
             if (message.Length == 32)
             {
+                string message_Id = message.Substring(0,4);
+                switch (message_Id)
+                {
+                    case "0002":
+                        int.TryParse(message.Substring(5,2), out int message_cmd);
+                        int.TryParse(message.Substring(8,2), out int message_val);
+                        if (message_cmd == 1 && message_val >= 0 && message_val <= 3)
+                            SelectedSpeed = message_val;
+                        break;
+                    default:
+                        break;
+                }
+                
                 SerialData += $"<== Rx<{date}> ~ {message}\n";
             }
             

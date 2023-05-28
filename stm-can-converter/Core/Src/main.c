@@ -47,7 +47,8 @@ typedef enum{
 
 typedef enum{
     RESET_SYSTEM,
-    SET_CAN_SPEED
+    SET_CAN_SPEED,
+	ACTIVE_CAN_SPEED
 
 }master_command_t;
 
@@ -178,6 +179,9 @@ void vMasterCommand(uint8_t cmd, uint8_t value){
             	canSpeedOnStartup = value;
             }
             break;
+        case ACTIVE_CAN_SPEED:
+			value = canSpeedOnStartup;
+			break;
         default:
             break;
     }

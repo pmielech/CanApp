@@ -4,6 +4,7 @@
     <option name="projectPerEditor">
       <map>
         <entry key="canApp/App.axaml" value="canApp/canApp.csproj" />
+        <entry key="canApp/ViewModels/textblockModel.axaml" value="canApp/canApp.csproj" />
         <entry key="canApp/Views/MainWindow.axaml" value="canApp/canApp.csproj" />
       </map>
     </option>

@@ -26,7 +26,11 @@
 /Users/patryk/.nuget/packages/avalonia/0.10.18/lib/netcoreapp2.0/Avalonia.Visuals.dll
 /Users/patryk/.nuget/packages/avalonia.win32/0.10.18/lib/netstandard2.0/Avalonia.Win32.dll
 /Users/patryk/.nuget/packages/avalonia.x11/0.10.18/lib/netstandard2.0/Avalonia.X11.dll
+/Users/patryk/.nuget/packages/commonservicelocator/2.0.2/lib/netcoreapp1.0/CommonServiceLocator.dll
 /Users/patryk/.nuget/packages/dynamicdata/7.1.1/lib/net5.0/DynamicData.dll
+/Users/patryk/.nuget/packages/mvvmlightlibs/5.4.1.1/lib/net45/GalaSoft.MvvmLight.dll
+/Users/patryk/.nuget/packages/mvvmlightlibs/5.4.1.1/lib/net45/GalaSoft.MvvmLight.Extras.dll
+/Users/patryk/.nuget/packages/mvvmlightlibs/5.4.1.1/lib/net45/GalaSoft.MvvmLight.Platform.dll
 /Users/patryk/.nuget/packages/harfbuzzsharp/2.8.2.1-preview.108/lib/net6.0/HarfBuzzSharp.dll
 /Users/patryk/.nuget/packages/jetbrains.annotations/10.3.0/lib/netstandard1.0/JetBrains.Annotations.dll
 /Users/patryk/.nuget/packages/microsoft.codeanalysis.csharp/3.4.0/lib/netstandard2.0/Microsoft.CodeAnalysis.CSharp.dll
@@ -192,6 +196,7 @@
 /usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/7.0.4/ref/net7.0/System.Web.dll
 /usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/7.0.4/ref/net7.0/System.Web.HttpUtility.dll
 /usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/7.0.4/ref/net7.0/System.Windows.dll
+/Users/patryk/.nuget/packages/mvvmlightlibs/5.4.1.1/lib/net45/System.Windows.Interactivity.dll
 /usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/7.0.4/ref/net7.0/System.Xml.dll
 /usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/7.0.4/ref/net7.0/System.Xml.Linq.dll
 /usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/7.0.4/ref/net7.0/System.Xml.ReaderWriter.dll
