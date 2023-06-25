@@ -119,7 +119,6 @@ public class MainWindowViewModel : ViewModelBase
         {
             if (ConnectionButton == "Connect")
             {
-                //TODO Exception when choosing wrong com port (unix) 
                 _serial.PortName = ComList.Items.ElementAt(SelectedCom).Name;
                 _serial.BaudRate = 115200;
                 _serial.Handshake = System.IO.Ports.Handshake.None;
@@ -177,17 +176,10 @@ public class MainWindowViewModel : ViewModelBase
 
     private void WriteToSerial(string msg)
     {
-        // Send the binary data out the port
         byte[] hexstring = Encoding.ASCII.GetBytes(msg += '\n');
-        //There is a intermitant problem that I came across
-        //If I write more than one byte in succesion without a 
-        //delay the PIC i'm communicating with will Crash
-        //I expect this id due to PC timing issues ad they are
-        //not directley connected to the COM port the solution
-        //Is a ver small 1 millisecound delay between chracters
         foreach (byte hexValue in hexstring)
         {
-            byte[] _hexValue = new byte[] { hexValue }; // need to convert byte to byte[] to write
+            byte[] _hexValue = new byte[] { hexValue };
             _serial.Write(_hexValue, 0, 1);
             Thread.Sleep(1);
         }

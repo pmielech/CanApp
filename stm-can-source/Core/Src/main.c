@@ -33,9 +33,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define ADC_SAMPLES 	10
-#define ADC_BUF_LEN 	2
-#define MSG_BUFFER_SIZE 8
+#define ADC_SAMPLES 	10u
+#define ADC_BUF_LEN 	2u
+#define MSG_BUFFER_SIZE 8u
 #define ADC_RES 		4096.0f
 #define REF_VOL 		3.33f
 #define VOLT_AT_T25		1.43f
@@ -79,19 +79,19 @@ CAN_TxHeaderTypeDef heartbeat_msgTxHeader;
 
 
 uint32_t TxMailbox;
-uint8_t TxData[MSG_BUFFER_SIZE] = {0};
-uint8_t RxData[MSG_BUFFER_SIZE] = {0};
-uint8_t OpData[MSG_BUFFER_SIZE] = {0};
-uint8_t can_status = 0;
-uint8_t heartbeat[MSG_BUFFER_SIZE] = {0};
-uint8_t nodeId = 0x05;
+uint8_t TxData[MSG_BUFFER_SIZE] = {0u};
+uint8_t RxData[MSG_BUFFER_SIZE] = {0u};
+uint8_t OpData[MSG_BUFFER_SIZE] = {0u};
+uint8_t can_status = 0u;
+uint8_t heartbeat[MSG_BUFFER_SIZE] = {0u};
+uint8_t nodeId = 0x05u;
 uint16_t internalData[ADC_BUF_LEN];
 uint16_t adcData[ADC_BUF_LEN];
 uint16_t opAdcData[ADC_BUF_LEN];
 uint8_t canSpeedOnStartup __attribute__ ((section (".no_init")));;
-uint8_t timerHandler = 0;
-uint8_t cyclicMessage = 0;
-uint8_t pwmValue = 0;
+uint8_t timerHandler = 0u;
+uint8_t cyclicMessage = 0u;
+uint8_t pwmValue = 0u;
 
 
 
@@ -115,7 +115,6 @@ static void MX_ADC2_Init(void);
 /* USER CODE BEGIN 0 */
 
 uint8_t usBuildAdc_message(){
-
 	memcpy(opAdcData, adcData, ADC_BUF_LEN);
 	TxData[0] = (opAdcData[0] >> 0) & 0xFF;
 	TxData[1] = (opAdcData[0] >> 8) & 0xFF;
@@ -168,12 +167,37 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 }
 
+
+void vBuildTxMessage(CAN_HandleTypeDef *hcan, uint32_t msg_id, uint16_t data){
+
+	memset(TxData, 0, MSG_BUFFER_SIZE);
+	TxData[0] = (data >> 0) & 0xFF;
+	if(data > 0xFF){
+		TxData[1] = (data >> 8) & 0xFF;
+		TxHeader.DLC = 0x02;
+	} else{
+		TxHeader.DLC = 0x01;
+	}
+
+	TxHeader.ExtId = 0;
+	TxHeader.IDE = CAN_ID_STD;
+	TxHeader.RTR = CAN_RTR_DATA;
+	TxHeader.StdId = msg_id + nodeId;
+	TxHeader.TransmitGlobalTime = DISABLE;
+	can_status += HAL_CAN_AddTxMessage(hcan, &TxHeader, &TxData[0], &TxMailbox);
+}
+
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
 	can_status = HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData);
 	switch(RxHeader.StdId){
 	case 0x100:
 		NVIC_SystemReset();
+		break;
+	case 0x200:
+		if(RxData[0] == 0xFF){
+			can_status += usBuildAdc_message();
+		}
 		break;
 
 	case 0x250:
@@ -182,6 +206,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		}else if(RxData[0] == 0xFF){
 			RxData[0] = cyclicMessage;
 		}
+		vBuildTxMessage(hcan, RxHeader.StdId, RxData[0]);
 		break;
 
 	case 0x300:
@@ -191,6 +216,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		} else if(RxData[0] == 0xFF){
 			RxData[0] = pwmValue;
 		}
+		vBuildTxMessage(hcan, RxHeader.StdId, RxData[0]);
 		break;
 
 	case 0x350:
@@ -199,13 +225,25 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		}
 		else if(RxData[0] == 0xFF){
 			RxData[0] = HAL_GPIO_ReadPin(INTERNAL_LED_GPIO_Port, INTERNAL_LED_Pin);
+
+		}
+		vBuildTxMessage(hcan, RxHeader.StdId, RxData[0]);
+		break;
+
+	case 0x400:
+		if(RxData[0] == 0xFF){
+
+			vBuildTxMessage(hcan, 0x200, adcData[0]);
+			vBuildTxMessage(hcan, 0x600, canSpeedOnStartup);
+			vBuildTxMessage(hcan, 0x650, usGetRefVoltValue());
 		}
 		break;
 
 	case 0x500:
 		if(RxData[0] == 0xFF){
-			RxData[0] = usGetTemperatureValue();
+			vBuildTxMessage(hcan, RxHeader.StdId, usGetTemperatureValue());
 		}
+
 		break;
 
 	case 0x550:
@@ -215,25 +253,24 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		else if(RxData[0] == 0xFF){
 			RxData[0] = HAL_GPIO_ReadPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 		}
+		vBuildTxMessage(hcan, RxHeader.StdId, RxData[0]);
 		break;
 
 	case 0x600:
 		if(RxData[0] >= 0 && RxData[0] <= 3){
 			canSpeedOnStartup = (uint8_t)RxData[0];
-		} else {
+		} else if(RxData[0] == 0xFF){
+			RxData[0] = canSpeedOnStartup;
+		}
+		else {
 			RxData[0] = 0x80;
 		}
+		vBuildTxMessage(hcan, RxHeader.StdId, RxData[0]);
 		break;
 
 	case 0x650:
 		if(RxData[0] == 0xFF){
-			uint8_t voltageValue = usGetRefVoltValue();
-			RxData[0] = (voltageValue >> 0) & 0xFF;
-			if(voltageValue > 0xFF){
-				RxData[1] = (voltageValue >> 8) & 0xFF;
-				RxHeader.DLC = 0x02;
-			}
-
+			vBuildTxMessage(hcan, 0x650, usGetRefVoltValue());
 		}
 		break;
 
@@ -241,15 +278,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		break;
 
 	}
-
-	TxHeader.DLC = RxHeader.DLC;
-	TxHeader.ExtId = 0;
-	TxHeader.IDE = CAN_ID_STD;
-	TxHeader.RTR = CAN_RTR_DATA;
-	TxHeader.StdId = RxHeader.StdId + nodeId;
-	TxHeader.TransmitGlobalTime = DISABLE;
-	memcpy(TxData, RxData, MSG_BUFFER_SIZE);
-	can_status += HAL_CAN_AddTxMessage(hcan, &TxHeader, &TxData[0], &TxMailbox);
 	memset(RxData, 0, MSG_BUFFER_SIZE);
 
 }
@@ -279,26 +307,25 @@ void setCanSpeed(can_speed_t canSpeed){
 	switch(canSpeed){
 
 	case SPEED_125_KBITS:
-		hcan.Init.Prescaler = 72;
+		hcan.Init.Prescaler = 72u;
 		break;
 
 	case SPEED_250_KBITS:
-		hcan.Init.Prescaler = 36;
+		hcan.Init.Prescaler = 36u;
 		break;
 
 	case SPEED_500_KBITS:
-		hcan.Init.Prescaler = 18;
+		hcan.Init.Prescaler = 18u;
 		break;
 
 	case SPEED_1000_KBITS:
-		hcan.Init.Prescaler = 9;
+		hcan.Init.Prescaler = 9u;
 		break;
 
 	default:
-		hcan.Init.Prescaler = 18;
-		canSpeedOnStartup = 2;
+		hcan.Init.Prescaler = 18u;
+		canSpeedOnStartup = 2u;
 		break;
-
 	}
 
 	hcan.Init.Mode = CAN_MODE_NORMAL;
@@ -315,6 +342,16 @@ void setCanSpeed(can_speed_t canSpeed){
 	{
 		Error_Handler();
 	}
+
+}
+
+void vLedStartup(){
+	for (uint8_t i = 0u; i < 5u; i++) {
+		HAL_GPIO_TogglePin(INTERNAL_LED_GPIO_Port, INTERNAL_LED_Pin);
+		HAL_Delay(50);
+	}
+	HAL_GPIO_WritePin(INTERNAL_LED_GPIO_Port, INTERNAL_LED_Pin, GPIO_PIN_RESET);
+
 
 }
 
@@ -358,6 +395,9 @@ int main(void)
   MX_TIM4_Init();
   MX_ADC2_Init();
   /* USER CODE BEGIN 2 */
+
+  vLedStartup();
+
   can_status += HAL_CAN_Start(&hcan);
   can_status += HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
   HAL_TIM_Base_Start_IT(&htim16);
@@ -371,8 +411,6 @@ int main(void)
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
 
   vCan_messages_init();
-
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
