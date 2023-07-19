@@ -1,4 +1,4 @@
-# inter-kom-proj
+# CanApp
 
 The goal of the project was to design an STM32-based CAN communication protocol driver and a desktop application to establish communication with the driver. In addition, to establish communication with the bus, an additional driver was programmed to enable translation of CAN messages to UART. The premise of the project was also to build a solution that works on multiple operating systems. The project was divided into three main parts in order to systematize the work and describe it.
 
